@@ -9,6 +9,7 @@ import History from './components/History';
 import Sales from './components/Sales';
 import StockRequests from './components/StockRequests';
 import Admin from './components/Admin';
+import Customers from './components/Customers';
 
 export default function App() {
   // Version 2.0 - Enhanced with Sales & Stock Requests
@@ -52,6 +53,7 @@ export default function App() {
     { id: 'sales', label: '🛒 Sales', icon: '🛒' },
     { id: 'requests', label: '📋 Requests', icon: '📋' },
     { id: 'transfers', label: '🔄 Transfers', icon: '🔄' },
+    { id: 'customers', label: '👥 Customers', icon: '👥' },
     { id: 'history', label: '📜 History', icon: '📜' },
     { id: 'admin', label: '⚙️ Admin', icon: '⚙️' }
   ];
@@ -114,6 +116,7 @@ export default function App() {
         {activeTab === 'sales' && <Sales />}
         {activeTab === 'requests' && <StockRequests />}
         {activeTab === 'transfers' && <StockTransfer />}
+        {activeTab === 'customers' && <Customers />}
         {activeTab === 'history' && <History />}
         {activeTab === 'admin' && <Admin />}
       </main>

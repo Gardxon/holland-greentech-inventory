@@ -73,9 +73,27 @@ class InventoryLevelWithProduct(BaseModel):
     class Config:
         from_attributes = True
 
+class CustomerBase(BaseModel):
+    name: str
+    contact: str
+    location: Optional[str] = None
+    category: str  # Farmer, Agrovet, Plant Raiser, Company
+
+class CustomerCreate(CustomerBase):
+    pass
+
+class Customer(CustomerBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class SalesBase(BaseModel):
     product_id: int
     branch_id: int
+    customer_id: Optional[int] = None
     quantity_sold: int
     unit_price: float
     payment_method: str = "cash"  # cash, mpesa, bank

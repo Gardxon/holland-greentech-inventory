@@ -8,9 +8,11 @@ export default function Sales() {
   const [loading, setLoading] = useState(false);
   const [branches, setBranches] = useState([]);
   const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
     product_id: '',
     branch_id: '',
+    customer_id: '',
     quantity_sold: '',
     unit_price: '',
     payment_method: 'cash',
@@ -21,6 +23,10 @@ export default function Sales() {
   const [success, setSuccess] = useState('');
   const [productSearch, setProductSearch] = useState('');
   const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+  const customerCategories = ['Farmer', 'Agrovet', 'Plant Raiser', 'Company'];
 
   useEffect(() => {
     fetchInitialData();
@@ -29,15 +35,17 @@ export default function Sales() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [branchRes, prodRes, salesRes, summaryRes] = await Promise.all([
+      const [branchRes, prodRes, custRes, salesRes, summaryRes] = await Promise.all([
         fetch('http://localhost:8000/branches/'),
         fetch('http://localhost:8000/products/'),
+        fetch('http://localhost:8000/api/admin/customers'),
         apiClient.getSales(),
         apiClient.getSalesSummary()
       ]);
 
       if (branchRes.ok) setBranches(await branchRes.json());
       if (prodRes.ok) setProducts(await prodRes.json());
+      if (custRes.ok) setCustomers(await custRes.json());
       if (salesRes.ok) setSales(salesRes.data);
       if (summaryRes.ok) setSummary(summaryRes.data);
     } catch (err) {
@@ -45,6 +53,25 @@ export default function Sales() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getFilteredCustomers = () => {
+    if (!customerSearch) return customers;
+    const search = customerSearch.toLowerCase();
+    return customers.filter(c =>
+      (c.name || '').toLowerCase().includes(search) ||
+      (c.contact || '').toLowerCase().includes(search) ||
+      (c.category || '').toLowerCase().includes(search)
+    );
+  };
+
+  const selectCustomer = (customer) => {
+    setFormData(prev => ({
+      ...prev,
+      customer_id: customer.id
+    }));
+    setCustomerSearch(`${customer.name} (${customer.category})`);
+    setShowCustomerDropdown(false);
   };
 
   const handleSubmit = async (e) => {
@@ -56,6 +83,7 @@ export default function Sales() {
       await apiClient.createSale({
         product_id: parseInt(formData.product_id),
         branch_id: parseInt(formData.branch_id),
+        customer_id: formData.customer_id ? parseInt(formData.customer_id) : null,
         quantity_sold: parseInt(formData.quantity_sold),
         unit_price: parseFloat(formData.unit_price),
         payment_method: formData.payment_method,
@@ -64,7 +92,8 @@ export default function Sales() {
       });
 
       setSuccess('Sale recorded successfully!');
-      setFormData({ product_id: '', branch_id: '', quantity_sold: '', unit_price: '', payment_method: 'cash', currency: 'TSH', notes: '' });
+      setFormData({ product_id: '', branch_id: '', customer_id: '', quantity_sold: '', unit_price: '', payment_method: 'cash', currency: 'TSH', notes: '' });
+      setCustomerSearch('');
       fetchInitialData();
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to record sale');
@@ -121,6 +150,50 @@ export default function Sales() {
                 <option value="">Select branch...</option>
                 {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Customer (Type or Select)</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  placeholder="Type customer name, contact, or category..."
+                  value={customerSearch}
+                  onChange={(e) => {
+                    setCustomerSearch(e.target.value);
+                    setShowCustomerDropdown(true);
+                  }}
+                  onFocus={() => setShowCustomerDropdown(true)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCustomerDropdown(!showCustomerDropdown)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  ▼
+                </button>
+              </div>
+              {showCustomerDropdown && (
+                <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg mb-2">
+                  {getFilteredCustomers().length > 0 ? (
+                    getFilteredCustomers().map(customer => (
+                      <button
+                        key={customer.id}
+                        type="button"
+                        onClick={() => selectCustomer(customer)}
+                        className="w-full text-left px-4 py-2 hover:bg-emerald-50 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium">{customer.name}</div>
+                        <div className="text-sm text-gray-600">{customer.contact}</div>
+                        <div className="text-xs text-gray-500">{customer.category} {customer.location && `• ${customer.location}`}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-3 text-gray-500 text-sm">No customers found</div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>

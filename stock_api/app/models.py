@@ -83,12 +83,26 @@ class User(Base):
     sales = relationship("Sales", back_populates="user")
     stock_requests = relationship("StockRequest", back_populates="created_by_user")
 
+class Customer(Base):
+    __tablename__ = "customers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    contact = Column(String)
+    location = Column(String, nullable=True)
+    category = Column(String, index=True)  # Farmer, Agrovet, Plant Raiser, Company
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    sales = relationship("Sales", back_populates="customer")
+
 class Sales(Base):
     __tablename__ = "sales"
 
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), index=True)
     branch_id = Column(Integer, ForeignKey("branches.id"), index=True)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=True, index=True)
     quantity_sold = Column(Integer)
     unit_price = Column(Float)
     total_amount = Column(Float)
@@ -100,6 +114,7 @@ class Sales(Base):
 
     product = relationship("Product")
     branch = relationship("Branch")
+    customer = relationship("Customer", back_populates="sales")
     user = relationship("User", back_populates="sales")
 
 class StockRequest(Base):

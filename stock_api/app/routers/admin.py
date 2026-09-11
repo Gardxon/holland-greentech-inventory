@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Product, InventoryLevel, Branch
-from app.schemas import ProductCreate, ProductUpdate, Product as ProductSchema
+from app.models import Product, InventoryLevel, Branch, Customer
+from app.schemas import ProductCreate, ProductUpdate, Product as ProductSchema, CustomerCreate, Customer as CustomerSchema
 import openpyxl
 from io import BytesIO
+import csv
+import io
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -126,3 +129,63 @@ async def import_products_excel(file: UploadFile = File(...), db: Session = Depe
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
+
+@router.post("/customers", response_model=CustomerSchema)
+def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+    db_customer = Customer(**customer.dict())
+    db.add(db_customer)
+    db.commit()
+    db.refresh(db_customer)
+    return db_customer
+
+@router.get("/customers", response_model=list[CustomerSchema])
+def get_customers(db: Session = Depends(get_db)):
+    return db.query(Customer).filter(Customer.is_active == True).all()
+
+@router.put("/customers/{customer_id}", response_model=CustomerSchema)
+def update_customer(customer_id: int, customer: CustomerCreate, db: Session = Depends(get_db)):
+    db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not db_customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    for key, value in customer.dict().items():
+        setattr(db_customer, key, value)
+
+    db.commit()
+    db.refresh(db_customer)
+    return db_customer
+
+@router.delete("/customers/{customer_id}")
+def delete_customer(customer_id: int, db: Session = Depends(get_db)):
+    db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not db_customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    db_customer.is_active = False
+    db.commit()
+    return {"message": "Customer deleted"}
+
+@router.get("/customers/export/csv")
+def export_customers_csv(db: Session = Depends(get_db)):
+    customers = db.query(Customer).filter(Customer.is_active == True).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Name", "Contact", "Location", "Category", "Created At"])
+
+    for customer in customers:
+        writer.writerow([
+            customer.id,
+            customer.name,
+            customer.contact,
+            customer.location or "",
+            customer.category,
+            customer.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=customers.csv"}
+    )

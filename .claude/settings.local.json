@@ -64,7 +64,8 @@
       "PowerShell($env:PATH = \"C:\\\\Program Files\\\\nodejs;$env:PATH\"; cd \"C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\stock_frontend\"; npm run dev)",
       "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Force)",
-      "Bash(git commit -m 'Add hybrid product selection to Add Stock form with category and pack size display *)"
+      "Bash(git commit -m 'Add hybrid product selection to Add Stock form with category and pack size display *)",
+      "Bash(git commit -m 'Add customer management with hybrid selection, categories, and CSV export *)"
     ]
   }
 }

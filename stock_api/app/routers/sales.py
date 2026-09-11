@@ -22,6 +22,7 @@ def create_sale(sale: schemas.SalesCreate, user_id: int = Query(1), db: Session 
     sale_record = models.Sales(
         product_id=sale.product_id,
         branch_id=sale.branch_id,
+        customer_id=sale.customer_id,
         quantity_sold=sale.quantity_sold,
         unit_price=sale.unit_price,
         total_amount=sale.quantity_sold * sale.unit_price,

@@ -81,7 +81,15 @@
       "Bash(timeout 5 python -m app.main)",
       "Bash(curl -s -i http://localhost:8000/dashboard/stats)",
       "Bash(python migrate_add_customer_id.py)",
-      "Bash(curl -i -H \"Origin: http://localhost:3001\" http://localhost:8000/dashboard/stats)"
+      "Bash(curl -i -H \"Origin: http://localhost:3001\" http://localhost:8000/dashboard/stats)",
+      "Bash(git commit -m 'Fix database schema and API configuration *)",
+      "Bash(curl -X POST http://localhost:8000/sales/ -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); print\\('Arusha ID:', [b['id'] for b in data if b['name'] == 'Arusha'][0]\\)\")",
+      "Bash(curl -s http://localhost:8000/products/)",
+      "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); tomato = [p for p in data if 'FORTESA' in p.get\\('name', ''\\)]; print\\('Tomato ID:', tomato[0]['id'] if tomato else 'NOT FOUND'\\); print\\('Tomato name:', tomato[0]['name'] if tomato else 'N/A'\\); print\\('Tomato stock at Arusha:', tomato[0]['id'] if tomato else 'N/A'\\)\")",
+      "Bash(curl -s -X POST http://localhost:8000/sales/ -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(python -m json.tool)",
+      "Bash(git commit -m 'Add system user for sales transactions *)"
     ]
   }
 }

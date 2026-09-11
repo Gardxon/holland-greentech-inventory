@@ -70,7 +70,18 @@
       "Bash(git commit -m 'Add inline customer creation during sales record *)",
       "Bash(git commit -m 'Add automatic branch selection and branch information display in Sales form *)",
       "Bash(git commit -m 'Add branch-based product filtering in Sales form *)",
-      "Bash(git commit -m 'Fix '\\\\''Failed to load statistics'\\\\'' error and improve error handling *)"
+      "Bash(git commit -m 'Fix '\\\\''Failed to load statistics'\\\\'' error and improve error handling *)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://100.97.187.60:8000/branches)",
+      "Bash(curl -s http://localhost:8000/branches)",
+      "Bash(curl -v http://localhost:8000/branches)",
+      "Bash(curl -s http://localhost:8000/branches/)",
+      "Bash(curl -s http://localhost:8000/dashboard/stats)",
+      "Bash(pkill -f \"python -m app.main\")",
+      "Bash(timeout 5 python -m app.main)",
+      "Bash(curl -s -i http://localhost:8000/dashboard/stats)",
+      "Bash(python migrate_add_customer_id.py)",
+      "Bash(curl -i -H \"Origin: http://localhost:3001\" http://localhost:8000/dashboard/stats)"
     ]
   }
 }

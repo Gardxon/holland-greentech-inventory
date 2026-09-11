@@ -1,0 +1,13 @@
+﻿
+> stock-management-frontend@1.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 96 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.59 kB │ gzip:  0.39 kB
+dist/assets/index-DPG0_6nQ.css   19.31 kB │ gzip:  4.05 kB
+dist/assets/index-lRaLRcrr.js   232.28 kB │ gzip: 72.03 kB
+✓ built in 8.66s

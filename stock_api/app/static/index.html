@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            padding: 0;
+            gap: 0;
+        }
+
+        .nav-tabs button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs button:hover {
+            background: #eee;
+        }
+
+        .nav-tabs button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.warehouse {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status.sub-branch {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #4caf50;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #f44336;
+        }
+
+        .message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Stock Management System</h1>
+            <p>HGT Inventory Control - Central Dashboard</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('branches')">Branches</button>
+            <button class="tab-btn" onclick="switchTab('products')">Products</button>
+            <button class="tab-btn" onclick="switchTab('inventory')">Inventory</button>
+            <button class="tab-btn" onclick="switchTab('transfers')">Stock Transfers</button>
+            <button class="tab-btn" onclick="switchTab('history')">Movement History</button>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="section">
+                    <h2>System Overview</h2>
+                    <div class="stats" id="stats-container">
+                        <div class="stat-card">
+                            <h3 id="branches-count">-</h3>
+                            <p>Total Branches</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="products-count">-</h3>
+                            <p>Products</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="movements-count">-</h3>
+                            <p>Stock Movements</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <button onclick="switchTab('branches')">View Branches</button>
+                        <button onclick="switchTab('products')">View Products</button>
+                        <button onclick="switchTab('inventory')">Check Inventory</button>
+                        <button onclick="switchTab('transfers')">Log Transfer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branches Tab -->
+            <div id="branches" class="tab-content">
+                <div class="section">
+                    <h2>Branches Management</h2>
+                    <div id="branches-message"></div>
+                    <div class="loading" id="branches-loading"><div class="spinner"></div></div>
+                    <div class="table-container" id="branches-container"></div>
+                </div>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="products" class="tab-content">
+                <div class="section">
+                    <h2>Products Catalog</h2>
+                    <div id="products-message"></div>
+                    <div class="loading" id="products-loading"><div class="spinner"></div></div>
+                    <div class="table-container" id="products-container"></div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventory" class="tab-content">
+                <div class="section">
+                    <h2>Stock Levels by Branch</h2>
+                    <div class="form-group">
+                        <label>Select Branch:</label>
+                        <select id="inventory-branch" onchange="loadBranchInventory()">
+                            <option value="">-- Choose Branch --</option>
+                        </select>
+                    </div>
+                    <div id="inventory-message"></div>
+                    <div class="loading" id="inventory-loading"><div class="spinner"></div></div>
+                    <div class="table-container" id="inventory-container"></div>
+                </div>
+            </div>
+
+            <!-- Stock Transfers Tab -->
+            <div id="transfers" class="tab-content">
+                <div class="section">
+                    <h2>Log Stock Transfer</h2>
+                    <div id="transfers-message"></div>
+
+                    <div class="form-group">
+                        <label>From Branch:</label>
+                        <select id="from-branch" onchange="loadProductsForBranch()">
+                            <option value="">-- Choose Branch --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>To Branch:</label>
+                        <select id="to-branch">
+                            <option value="">-- Choose Branch --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Product:</label>
+                        <select id="transfer-product">
+                            <option value="">-- Choose Product --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quantity:</label>
+                        <input type="number" id="transfer-quantity" placeholder="Enter quantity" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reference Number:</label>
+                        <input type="text" id="transfer-ref" placeholder="e.g., TRF-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes:</label>
+                        <textarea id="transfer-notes" placeholder="Optional notes about this transfer" rows="3"></textarea>
+                    </div>
+
+                    <button onclick="logTransfer()">Log Transfer</button>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div class="section">
+                    <h2>Stock Movement History</h2>
+                    <div id="history-message"></div>
+                    <div class="loading" id="history-loading"><div class="spinner"></div></div>
+                    <div class="table-container" id="history-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'branches') loadBranches();
+            if (tabName === 'products') loadProducts();
+            if (tabName === 'inventory') loadBranchesForInventory();
+            if (tabName === 'transfers') loadBranchesForTransfers();
+            if (tabName === 'history') loadHistory();
+            if (tabName === 'dashboard') loadDashboard();
+        }
+
+        function showMessage(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+
+        async function loadDashboard() {
+            try {
+                const [branches, products, movements] = await Promise.all([
+                    fetch(`${API_URL}/branches`).then(r => r.json()),
+                    fetch(`${API_URL}/products`).then(r => r.json()),
+                    fetch(`${API_URL}/movements`).then(r => r.json())
+                ]);
+
+                document.getElementById('branches-count').textContent = branches.length;
+                document.getElementById('products-count').textContent = products.length;
+                document.getElementById('movements-count').textContent = movements.length;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadBranches() {
+            const container = document.getElementById('branches-container');
+            const loading = document.getElementById('branches-loading');
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_URL}/branches`);
+                const branches = await response.json();
+
+                let html = '<table><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Type</th><th>Status</th></tr></thead><tbody>';
+                branches.forEach(branch => {
+                    const typeClass = branch.branch_type === 'warehouse' ? 'warehouse' : 'sub-branch';
+                    html += `<tr>
+                        <td>${branch.id}</td>
+                        <td><strong>${branch.name}</strong></td>
+                        <td>${branch.location}</td>
+                        <td><span class="status ${typeClass}">${branch.branch_type}</span></td>
+                        <td>${branch.is_active ? '✓ Active' : '✗ Inactive'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                showMessage('branches-message', `Loaded ${branches.length} branches`, 'success');
+            } catch (error) {
+                showMessage('branches-message', `Error: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        async function loadProducts() {
+            const container = document.getElementById('products-container');
+            const loading = document.getElementById('products-loading');
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_URL}/products?skip=0&limit=100`);
+                const products = await response.json();
+
+                let html = '<table><thead><tr><th>SKU</th><th>Product Name</th><th>Unit Price</th><th>Reorder Level</th><th>Status</th></tr></thead><tbody>';
+                products.forEach(product => {
+                    html += `<tr>
+                        <td><strong>${product.sku}</strong></td>
+                        <td>${product.name}</td>
+                        <td>${product.unit_price.toLocaleString()}</td>
+                        <td>${product.reorder_level}</td>
+                        <td>${product.is_active ? '✓ Active' : '✗ Inactive'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                showMessage('products-message', `Loaded ${products.length} products`, 'success');
+            } catch (error) {
+                showMessage('products-message', `Error: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        async function loadBranchesForInventory() {
+            const select = document.getElementById('inventory-branch');
+            try {
+                const response = await fetch(`${API_URL}/branches`);
+                const branches = await response.json();
+                select.innerHTML = '<option value="">-- Choose Branch --</option>';
+                branches.forEach(branch => {
+                    select.innerHTML += `<option value="${branch.id}">${branch.name}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading branches:', error);
+            }
+        }
+
+        async function loadBranchInventory() {
+            const branchId = document.getElementById('inventory-branch').value;
+            if (!branchId) return;
+
+            const container = document.getElementById('inventory-container');
+            const loading = document.getElementById('inventory-loading');
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_URL}/inventory/branch/${branchId}`);
+                const inventory = await response.json();
+
+                let html = '<table><thead><tr><th>Product SKU</th><th>Product Name</th><th>Quantity On Hand</th><th>Last Updated</th></tr></thead><tbody>';
+                inventory.forEach(item => {
+                    html += `<tr>
+                        <td><strong>${item.product?.sku || 'N/A'}</strong></td>
+                        <td>${item.product?.name || 'N/A'}</td>
+                        <td style="font-weight: bold; color: #667eea;">${item.quantity_on_hand}</td>
+                        <td>${new Date(item.last_updated).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                showMessage('inventory-message', `Loaded ${inventory.length} items`, 'success');
+            } catch (error) {
+                showMessage('inventory-message', `Error: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        async function loadBranchesForTransfers() {
+            const fromSelect = document.getElementById('from-branch');
+            const toSelect = document.getElementById('to-branch');
+            try {
+                const response = await fetch(`${API_URL}/branches`);
+                const branches = await response.json();
+
+                let html = '<option value="">-- Choose Branch --</option>';
+                branches.forEach(branch => {
+                    html += `<option value="${branch.id}">${branch.name}</option>`;
+                });
+
+                fromSelect.innerHTML = html;
+                toSelect.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading branches:', error);
+            }
+        }
+
+        async function loadProductsForBranch() {
+            const fromBranch = document.getElementById('from-branch').value;
+            if (!fromBranch) {
+                document.getElementById('transfer-product').innerHTML = '<option value="">-- Choose Product --</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/inventory/branch/${fromBranch}`);
+                const inventory = await response.json();
+
+                let html = '<option value="">-- Choose Product --</option>';
+                inventory.forEach(item => {
+                    if (item.quantity_on_hand > 0) {
+                        html += `<option value="${item.product_id}">${item.product?.sku} - ${item.product?.name} (${item.quantity_on_hand} available)</option>`;
+                    }
+                });
+                document.getElementById('transfer-product').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        async function logTransfer() {
+            const fromBranch = document.getElementById('from-branch').value;
+            const toBranch = document.getElementById('to-branch').value;
+            const productId = document.getElementById('transfer-product').value;
+            const quantity = document.getElementById('transfer-quantity').value;
+            const refNumber = document.getElementById('transfer-ref').value;
+            const notes = document.getElementById('transfer-notes').value;
+
+            if (!fromBranch || !toBranch || !productId || !quantity) {
+                showMessage('transfers-message', 'Please fill all required fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/movements`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: parseInt(productId),
+                        from_branch_id: parseInt(fromBranch),
+                        to_branch_id: parseInt(toBranch),
+                        quantity: parseInt(quantity),
+                        movement_type: 'transfer',
+                        reference_number: refNumber,
+                        notes: notes
+                    })
+                });
+
+                if (response.ok) {
+                    showMessage('transfers-message', 'Transfer logged successfully!', 'success');
+                    document.getElementById('transfer-quantity').value = '';
+                    document.getElementById('transfer-ref').value = '';
+                    document.getElementById('transfer-notes').value = '';
+                } else {
+                    showMessage('transfers-message', 'Error logging transfer', 'error');
+                }
+            } catch (error) {
+                showMessage('transfers-message', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadHistory() {
+            const container = document.getElementById('history-container');
+            const loading = document.getElementById('history-loading');
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch(`${API_URL}/movements?skip=0&limit=50`);
+                const movements = await response.json();
+
+                let html = '<table><thead><tr><th>Date</th><th>Type</th><th>From Branch</th><th>To Branch</th><th>Product</th><th>Quantity</th><th>Reference</th></tr></thead><tbody>';
+                movements.forEach(movement => {
+                    const date = new Date(movement.created_at).toLocaleDateString();
+                    html += `<tr>
+                        <td>${date}</td>
+                        <td><span class="status active">${movement.movement_type}</span></td>
+                        <td>${movement.from_branch?.name || '-'}</td>
+                        <td>${movement.to_branch?.name || '-'}</td>
+                        <td>${movement.product?.sku || 'N/A'}</td>
+                        <td style="font-weight: bold;">${movement.quantity}</td>
+                        <td>${movement.reference_number || '-'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                showMessage('history-message', `Loaded ${movements.length} movements`, 'success');
+            } catch (error) {
+                showMessage('history-message', `Error: ${error.message}`, 'error');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        // Load dashboard on page load
+        window.onload = loadDashboard;
+    </script>
+</body>
+</html>

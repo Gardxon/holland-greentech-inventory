@@ -94,7 +94,17 @@
       "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); tomato_sales = [s for s in data if s['product_id'] == 161]; print\\(f'Total Tomato FORTESA sales: {len\\(tomato_sales\\)}'\\); total_units = sum\\(s['quantity_sold'] for s in tomato_sales\\); print\\(f'Total units sold: {total_units}'\\); print\\('\\\\nSales records:'\\); [print\\(f' Sale ID {s[\\\\\"id\\\\\"]}: {s[\\\\\"quantity_sold\\\\\"]} units @ {s[\\\\\"unit_price\\\\\"]} TSH'\\) for s in tomato_sales]\")",
       "Bash(python -c \"import json, sys; result = json.load\\(sys.stdin\\); print\\('Response:', result.get\\('detail', 'Sale recorded'\\)\\)\")",
       "Bash(curl -s -m 3 http://localhost:8000/health)",
-      "Bash(git commit -m 'Complete end-to-end testing and verification of HGT inventory system *)"
+      "Bash(git commit -m 'Complete end-to-end testing and verification of HGT inventory system *)",
+      "Bash(curl -s http://localhost:8000/products)",
+      "Bash(curl -s http://localhost:8000/customers)",
+      "Bash(curl -s http://localhost:8000/sales)",
+      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\(f'Count: {len\\(data\\)}, First: {data[0][\\\\\"name\\\\\"] if data else \\\\\"N/A\\\\\"}'\\) if isinstance\\(data, list\\) else print\\('Not a list'\\)\")",
+      "Bash(curl -s http://localhost:8000/movements/)",
+      "Bash(python -c \"import sys, json; data=json.load\\(sys.stdin\\); print\\(f'Count: {len\\(data\\)}'\\) if isinstance\\(data, list\\) else print\\(json.dumps\\(data\\)\\)\")",
+      "Bash(curl -s http://localhost:8000/api/admin/customers)",
+      "Bash(curl -s \"http://localhost:8000/sales/?skip=0&limit=1\")",
+      "Bash(./node_modules/.bin/vite build *)",
+      "Bash(\"/c/Program Files/nodejs/npm\" run build)"
     ]
   }
 }

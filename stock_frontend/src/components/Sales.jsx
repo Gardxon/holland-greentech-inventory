@@ -73,9 +73,9 @@ export default function Sales() {
       if (branchRes.ok) {
         const branchesData = await branchRes.json();
         setBranches(branchesData);
-        // Auto-select first branch
+        // Auto-select first branch (convert to string to match select element values)
         if (branchesData.length > 0) {
-          setFormData(prev => ({ ...prev, branch_id: branchesData[0].id }));
+          setFormData(prev => ({ ...prev, branch_id: String(branchesData[0].id) }));
         }
       }
       if (prodRes.ok) setProducts(await prodRes.json());
@@ -247,7 +247,7 @@ export default function Sales() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="">Select branch...</option>
-                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                {branches.map(b => <option key={b.id} value={String(b.id)}>{b.name}</option>)}
               </select>
               {getSelectedBranch() && (
                 <div className="mt-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
@@ -259,7 +259,7 @@ export default function Sales() {
               )}
             </div>
 
-            <div>
+            <div className="relative z-40">
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer (Type or Select)</label>
               <div className="flex gap-2 mb-2">
                 <input
@@ -282,7 +282,7 @@ export default function Sales() {
                 </button>
               </div>
               {showCustomerDropdown && (
-                <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg mb-2">
+                <div className="relative z-50 border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg mb-2">
                   {getFilteredCustomers().length > 0 ? (
                     getFilteredCustomers().map(customer => (
                       <button
@@ -365,7 +365,7 @@ export default function Sales() {
               )}
             </div>
 
-            <div>
+            <div className="relative z-20">
               <label className="block text-sm font-medium text-gray-700 mb-1">Product * (Type or Select)</label>
               <div className="relative">
                 <div className="flex gap-2">
@@ -389,7 +389,7 @@ export default function Sales() {
                   </button>
                 </div>
                 {showProductDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                  <div className="absolute z-30 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                     {getFilteredBranchProducts().length > 0 ? (
                       getFilteredBranchProducts().map(p => (
                         <div

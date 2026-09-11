@@ -28,7 +28,7 @@ export default function App() {
       const [branchesRes, productsRes, movementsRes] = await Promise.all([
         api.get('/branches'),
         api.get('/products'),
-        api.get('/movements')
+        api.get('/movements/')
       ]);
 
       setStats({

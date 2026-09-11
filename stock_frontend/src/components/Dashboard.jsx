@@ -5,6 +5,7 @@ import { apiClient } from '../services/api';
 export default function Dashboard({ stats, loading: initialLoading }) {
   const [dashStats, setDashStats] = useState(null);
   const [loading, setLoading] = useState(initialLoading);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchDashboardStats();
@@ -13,10 +14,13 @@ export default function Dashboard({ stats, loading: initialLoading }) {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await apiClient.getDashboardStats();
       setDashStats(response.data);
     } catch (error) {
+      setError('Failed to load dashboard statistics');
       console.error('Failed to fetch dashboard stats:', error);
+      setDashStats(null);
     } finally {
       setLoading(false);
     }
@@ -37,6 +41,8 @@ export default function Dashboard({ stats, loading: initialLoading }) {
   };
 
   if (loading) return <Loading />;
+
+  if (error) return <div className="text-center py-8 text-red-600"><p>{error}</p></div>;
 
   const statCards = [
     { label: 'Total Branches', value: stats?.branches || 0, color: 'from-emerald-500 to-emerald-600', icon: '🏢' },

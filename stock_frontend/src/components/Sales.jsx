@@ -25,6 +25,14 @@ export default function Sales() {
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState({
+    name: '',
+    contact: '',
+    location: '',
+    category: 'Farmer'
+  });
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   const customerCategories = ['Farmer', 'Agrovet', 'Plant Raiser', 'Company'];
 
@@ -72,6 +80,40 @@ export default function Sales() {
     }));
     setCustomerSearch(`${customer.name} (${customer.category})`);
     setShowCustomerDropdown(false);
+  };
+
+  const handleAddNewCustomer = async () => {
+    if (!newCustomerData.name || !newCustomerData.contact) {
+      alert('Please enter customer name and contact');
+      return;
+    }
+
+    setCreatingCustomer(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/admin/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newCustomerData)
+      });
+
+      if (response.ok) {
+        const newCustomer = await response.json();
+        setCustomers(prev => [...prev, newCustomer]);
+        selectCustomer(newCustomer);
+        setNewCustomerData({ name: '', contact: '', location: '', category: 'Farmer' });
+        setShowAddCustomerForm(false);
+        setSuccess('Customer added successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError('Failed to add customer');
+      }
+    } catch (err) {
+      setError('Failed to add customer: ' + err.message);
+    } finally {
+      setCreatingCustomer(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -190,8 +232,70 @@ export default function Sales() {
                       </button>
                     ))
                   ) : (
-                    <div className="px-4 py-3 text-gray-500 text-sm">No customers found</div>
+                    <div className="px-4 py-3 text-gray-500 text-sm text-center">No customers found</div>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCustomerForm(!showAddCustomerForm)}
+                    className="w-full text-left px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-t border-gray-200 font-medium text-sm"
+                  >
+                    + Add New Customer
+                  </button>
+                </div>
+              )}
+
+              {showAddCustomerForm && (
+                <div className="border border-emerald-300 rounded-lg bg-emerald-50 p-4 mb-2 space-y-3">
+                  <h4 className="font-medium text-gray-900">Add Customer During Sale</h4>
+                  <input
+                    type="text"
+                    placeholder="Customer Name *"
+                    value={newCustomerData.name}
+                    onChange={(e) => setNewCustomerData({ ...newCustomerData, name: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contact (Phone/Email) *"
+                    value={newCustomerData.contact}
+                    onChange={(e) => setNewCustomerData({ ...newCustomerData, contact: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={newCustomerData.category}
+                      onChange={(e) => setNewCustomerData({ ...newCustomerData, category: e.target.value })}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    >
+                      {customerCategories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Location"
+                      value={newCustomerData.location}
+                      onChange={(e) => setNewCustomerData({ ...newCustomerData, location: e.target.value })}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAddNewCustomer}
+                      disabled={creatingCustomer}
+                      className="flex-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:bg-gray-400"
+                    >
+                      {creatingCustomer ? 'Adding...' : 'Add & Select'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCustomerForm(false)}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

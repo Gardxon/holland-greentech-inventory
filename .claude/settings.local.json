@@ -65,7 +65,9 @@
       "PowerShell(Get-Process node -ErrorAction SilentlyContinue)",
       "PowerShell(Stop-Process -Force)",
       "Bash(git commit -m 'Add hybrid product selection to Add Stock form with category and pack size display *)",
-      "Bash(git commit -m 'Add customer management with hybrid selection, categories, and CSV export *)"
+      "Bash(git commit -m 'Add customer management with hybrid selection, categories, and CSV export *)",
+      "PowerShell(Get-Process python -ErrorAction SilentlyContinue)",
+      "Bash(git commit -m 'Add inline customer creation during sales record *)"
     ]
   }
 }

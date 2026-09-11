@@ -89,7 +89,12 @@
       "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); tomato = [p for p in data if 'FORTESA' in p.get\\('name', ''\\)]; print\\('Tomato ID:', tomato[0]['id'] if tomato else 'NOT FOUND'\\); print\\('Tomato name:', tomato[0]['name'] if tomato else 'N/A'\\); print\\('Tomato stock at Arusha:', tomato[0]['id'] if tomato else 'N/A'\\)\")",
       "Bash(curl -s -X POST http://localhost:8000/sales/ -H 'Content-Type: application/json' -d '{ *)",
       "Bash(python -m json.tool)",
-      "Bash(git commit -m 'Add system user for sales transactions *)"
+      "Bash(git commit -m 'Add system user for sales transactions *)",
+      "Bash(curl -s http://localhost:8000/sales/)",
+      "Bash(python -c \"import json, sys; data = json.load\\(sys.stdin\\); tomato_sales = [s for s in data if s['product_id'] == 161]; print\\(f'Total Tomato FORTESA sales: {len\\(tomato_sales\\)}'\\); total_units = sum\\(s['quantity_sold'] for s in tomato_sales\\); print\\(f'Total units sold: {total_units}'\\); print\\('\\\\nSales records:'\\); [print\\(f' Sale ID {s[\\\\\"id\\\\\"]}: {s[\\\\\"quantity_sold\\\\\"]} units @ {s[\\\\\"unit_price\\\\\"]} TSH'\\) for s in tomato_sales]\")",
+      "Bash(python -c \"import json, sys; result = json.load\\(sys.stdin\\); print\\('Response:', result.get\\('detail', 'Sale recorded'\\)\\)\")",
+      "Bash(curl -s -m 3 http://localhost:8000/health)",
+      "Bash(git commit -m 'Complete end-to-end testing and verification of HGT inventory system *)"
     ]
   }
 }

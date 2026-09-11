@@ -8,6 +8,7 @@ export default function Admin() {
   const [message, setMessage] = useState(null);
   const [branches, setBranches] = useState([]);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState(['Seeds', 'Irrigation Equipment', 'Peatmoss', 'Pest Management/IPM', 'Greenhouse Supplies']);
   const [file, setFile] = useState(null);
 
   // Form states
@@ -27,6 +28,10 @@ export default function Admin() {
     quantity: ''
   });
 
+  // Hybrid SKU selection states
+  const [skuSearch, setSkuSearch] = useState('');
+  const [showSkuDropdown, setShowSkuDropdown] = useState(false);
+
   useEffect(() => {
     loadBranches();
     loadProducts();
@@ -45,6 +50,18 @@ export default function Admin() {
     try {
       const response = await api.get('/products?skip=0&limit=1000');
       setProducts(response.data);
+
+      const uniqueCategories = [...new Set(response.data
+        .map(p => p.category)
+        .filter(c => c && c.trim())
+      )];
+
+      if (uniqueCategories.length > 0) {
+        setCategories(prev => {
+          const merged = [...new Set([...prev, ...uniqueCategories])];
+          return merged.sort();
+        });
+      }
     } catch (err) {
       console.error('Failed to load products', err);
     }
@@ -139,6 +156,47 @@ export default function Admin() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleSkuSearch = (value) => {
+    setSkuSearch(value);
+    setFormData(prev => ({ ...prev, sku: value }));
+  };
+
+  const selectProduct = (product) => {
+    setFormData(prev => ({
+      ...prev,
+      sku: product.sku,
+      name: product.name,
+      category: product.category || '',
+      pack_size: product.pack_size || '',
+      unit_price: product.unit_price || ''
+    }));
+    setSkuSearch(product.sku);
+    setShowSkuDropdown(false);
+  };
+
+  const handleCategoryChange = (e) => {
+    const { value } = e.target;
+    setFormData(prev => ({ ...prev, category: value }));
+  };
+
+  const generateNextSku = () => {
+    if (!products || products.length === 0) return 'HGT-001';
+    const skus = products.map(p => p.sku).filter(s => s && s.startsWith('HGT-'));
+    if (skus.length === 0) return 'HGT-001';
+    const numbers = skus.map(s => parseInt(s.split('-')[1] || 0));
+    const maxNum = Math.max(...numbers);
+    return `HGT-${String(maxNum + 1).padStart(3, '0')}`;
+  };
+
+  const getFilteredProducts = () => {
+    if (!skuSearch) return products;
+    const search = skuSearch.toLowerCase();
+    return products.filter(p =>
+      (p.sku || '').toLowerCase().includes(search) ||
+      (p.name || '').toLowerCase().includes(search)
+    );
+  };
+
   const handleStockInputChange = (e) => {
     const { name, value } = e.target;
     setStockData(prev => ({ ...prev, [name]: value }));
@@ -183,16 +241,54 @@ export default function Admin() {
           {activeTab === 'add-product' && (
             <form onSubmit={handleAddProduct} className="space-y-4 max-w-2xl">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
-                <input
-                  type="text"
-                  name="sku"
-                  value={formData.sku}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="e.g., HGT-001"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">SKU * (Search or type new)</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={skuSearch}
+                    onChange={(e) => handleSkuSearch(e.target.value)}
+                    placeholder="Type SKU or product name..."
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSkuDropdown(!showSkuDropdown)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    ▼
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newSku = generateNextSku();
+                      handleSkuSearch(newSku);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium"
+                    title="Auto-generate new SKU"
+                  >
+                    ✨
+                  </button>
+                </div>
+                {showSkuDropdown && (
+                  <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                    {getFilteredProducts().length > 0 ? (
+                      getFilteredProducts().map(product => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => selectProduct(product)}
+                          className="w-full text-left px-4 py-2 hover:bg-emerald-50 border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{product.sku}</div>
+                          <div className="text-sm text-gray-600">{product.name}</div>
+                          {product.pack_size && <div className="text-xs text-gray-500">Pack: {product.pack_size}</div>}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-sm">No matching products</div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -210,15 +306,19 @@ export default function Admin() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                  <select
                     name="category"
                     value={formData.category}
-                    onChange={handleInputChange}
+                    onChange={handleCategoryChange}
+                    required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g., Welding Supplies"
-                  />
+                  >
+                    <option value="">Select a category...</option>
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

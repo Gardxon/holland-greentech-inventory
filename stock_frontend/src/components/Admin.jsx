@@ -32,6 +32,10 @@ export default function Admin() {
   const [skuSearch, setSkuSearch] = useState('');
   const [showSkuDropdown, setShowSkuDropdown] = useState(false);
 
+  // Hybrid product selection for stock form
+  const [productSearch, setProductSearch] = useState('');
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+
   useEffect(() => {
     loadBranches();
     loadProducts();
@@ -195,6 +199,29 @@ export default function Admin() {
       (p.sku || '').toLowerCase().includes(search) ||
       (p.name || '').toLowerCase().includes(search)
     );
+  };
+
+  const getFilteredStockProducts = () => {
+    if (!productSearch) return products;
+    const search = productSearch.toLowerCase();
+    return products.filter(p =>
+      (p.sku || '').toLowerCase().includes(search) ||
+      (p.name || '').toLowerCase().includes(search)
+    );
+  };
+
+  const selectStockProduct = (product) => {
+    setStockData(prev => ({
+      ...prev,
+      product_id: product.id
+    }));
+    setProductSearch(`${product.sku} - ${product.name}`);
+    setShowProductDropdown(false);
+  };
+
+  const getSelectedProduct = () => {
+    if (!stockData.product_id) return null;
+    return products.find(p => p.id === parseInt(stockData.product_id));
   };
 
   const handleStockInputChange = (e) => {
@@ -402,20 +429,67 @@ export default function Admin() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Product *</label>
-                <select
-                  name="product_id"
-                  value={stockData.product_id}
-                  onChange={handleStockInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="">Choose a product...</option>
-                  {products.map(product => (
-                    <option key={product.id} value={product.id}>{product.sku} - {product.name}</option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Product * (Search or scroll)</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Type product SKU or name..."
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowProductDropdown(!showProductDropdown)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    ▼
+                  </button>
+                </div>
+                {showProductDropdown && (
+                  <div className="border border-gray-300 rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                    {getFilteredStockProducts().length > 0 ? (
+                      getFilteredStockProducts().map(product => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => selectStockProduct(product)}
+                          className="w-full text-left px-4 py-2 hover:bg-emerald-50 border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium">{product.sku}</div>
+                          <div className="text-sm text-gray-600">{product.name}</div>
+                          {product.pack_size && <div className="text-xs text-gray-500">Pack: {product.pack_size}</div>}
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-sm">No matching products</div>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {getSelectedProduct() && (
+                <div className="grid grid-cols-2 gap-4 bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <input
+                      type="text"
+                      value={getSelectedProduct()?.category || 'N/A'}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Pack Size</label>
+                    <input
+                      type="text"
+                      value={getSelectedProduct()?.pack_size || 'N/A'}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Quantity to Add *</label>

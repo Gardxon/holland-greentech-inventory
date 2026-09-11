@@ -9,6 +9,7 @@ export default function Sales() {
   const [branches, setBranches] = useState([]);
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [branchInventory, setBranchInventory] = useState([]);
   const [formData, setFormData] = useState({
     product_id: '',
     branch_id: '',
@@ -39,6 +40,24 @@ export default function Sales() {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    if (formData.branch_id) {
+      loadBranchInventory(formData.branch_id);
+    }
+  }, [formData.branch_id]);
+
+  const loadBranchInventory = async (branchId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/inventory/branch/${branchId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setBranchInventory(data);
+      }
+    } catch (err) {
+      console.error('Failed to load branch inventory:', err);
+    }
+  };
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -92,6 +111,32 @@ export default function Sales() {
   const getSelectedBranch = () => {
     if (!formData.branch_id) return null;
     return branches.find(b => b.id === parseInt(formData.branch_id));
+  };
+
+  const getBranchProducts = () => {
+    if (!formData.branch_id || branchInventory.length === 0) {
+      return [];
+    }
+    // Filter products to only show those with inventory at selected branch
+    return products.filter(product => {
+      return branchInventory.some(inv => inv.product_id === product.id && inv.quantity_on_hand > 0);
+    }).map(product => {
+      const inventory = branchInventory.find(inv => inv.product_id === product.id);
+      return {
+        ...product,
+        available_quantity: inventory?.quantity_on_hand || 0
+      };
+    });
+  };
+
+  const getFilteredBranchProducts = () => {
+    const branchProducts = getBranchProducts();
+    if (!productSearch) return branchProducts;
+    const search = productSearch.toLowerCase();
+    return branchProducts.filter(p =>
+      p.name.toLowerCase().includes(search) ||
+      p.sku.toLowerCase().includes(search)
+    );
   };
 
   const handleAddNewCustomer = async () => {
@@ -345,14 +390,8 @@ export default function Sales() {
                 </div>
                 {showProductDropdown && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-                    {(productSearch
-                      ? products.filter(p =>
-                          p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-                          p.sku.toLowerCase().includes(productSearch.toLowerCase())
-                        )
-                      : products
-                    )
-                      .map(p => (
+                    {getFilteredBranchProducts().length > 0 ? (
+                      getFilteredBranchProducts().map(p => (
                         <div
                           key={p.id}
                           onClick={() => {
@@ -367,14 +406,16 @@ export default function Sales() {
                           className="px-4 py-2 hover:bg-emerald-50 cursor-pointer border-b last:border-b-0"
                         >
                           <p className="font-medium text-gray-900">{p.name}</p>
-                          <p className="text-xs text-gray-500">SKU: {p.sku} | Pack: {p.pack_size || 'N/A'}</p>
+                          <p className="text-xs text-gray-500">
+                            SKU: {p.sku} | Pack: {p.pack_size || 'N/A'} |
+                            <span className="text-emerald-600 font-medium"> In Stock: {p.available_quantity}</span>
+                          </p>
                         </div>
-                      ))}
-                    {products.filter(p =>
-                      productSearch ? p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-                        p.sku.toLowerCase().includes(productSearch.toLowerCase()) : true
-                    ).length === 0 && (
-                      <div className="px-4 py-2 text-gray-500 text-center">No products found</div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        {formData.branch_id ? 'No products available at this branch' : 'Select a branch first'}
+                      </div>
                     )}
                   </div>
                 )}

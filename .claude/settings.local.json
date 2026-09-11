@@ -68,7 +68,8 @@
       "Bash(git commit -m 'Add customer management with hybrid selection, categories, and CSV export *)",
       "PowerShell(Get-Process python -ErrorAction SilentlyContinue)",
       "Bash(git commit -m 'Add inline customer creation during sales record *)",
-      "Bash(git commit -m 'Add automatic branch selection and branch information display in Sales form *)"
+      "Bash(git commit -m 'Add automatic branch selection and branch information display in Sales form *)",
+      "Bash(git commit -m 'Add branch-based product filtering in Sales form *)"
     ]
   }
 }

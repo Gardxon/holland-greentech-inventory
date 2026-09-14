@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Dynamically determine API URL based on current location
+// This allows the app to work from localhost, 127.0.0.1, Tailscale IP, etc.
+const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000`;
 
 const api = axios.create({
   baseURL: API_URL,

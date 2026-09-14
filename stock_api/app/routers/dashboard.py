@@ -11,66 +11,82 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 @router.get("/stats")
 def get_dashboard_stats(db: Session = Depends(get_db)):
-    branches = db.query(models.Branch).count()
-    products = db.query(models.Product).count()
+    try:
+        branches = db.query(models.Branch).count()
+        products = db.query(models.Product).count()
 
-    inventories = db.query(models.InventoryLevel).all()
-    total_stock_units = sum(inv.quantity_on_hand for inv in inventories)
-    total_stock_value = sum(inv.quantity_on_hand * inv.product.unit_price for inv in inventories)
+        inventories = db.query(models.InventoryLevel).all()
+        total_stock_units = sum((inv.quantity_on_hand or 0) for inv in inventories) if inventories else 0
+        total_stock_value = sum(((inv.quantity_on_hand or 0) * (inv.product.unit_price or 0)) for inv in inventories) if inventories else 0
 
-    movements = db.query(models.StockMovement).count()
-    sales = db.query(models.Sales).count()
+        movements = db.query(models.StockMovement).count()
+        sales = db.query(models.Sales).count()
 
-    recent_movements = db.query(models.StockMovement).order_by(
-        models.StockMovement.created_at.desc()
-    ).limit(10).all()
+        recent_movements = db.query(models.StockMovement).order_by(
+            models.StockMovement.created_at.desc()
+        ).limit(10).all()
 
-    low_stock_items = []
-    for inv in inventories:
-        if inv.quantity_on_hand <= inv.product.reorder_level:
-            low_stock_items.append({
-                "product_id": inv.product_id,
-                "product_name": inv.product.name,
-                "sku": inv.product.sku,
-                "quantity_on_hand": inv.quantity_on_hand,
-                "reorder_level": inv.product.reorder_level,
-                "branch": inv.branch.name
-            })
+        low_stock_items = []
+        for inv in inventories:
+            try:
+                if inv.product and inv.quantity_on_hand <= (inv.product.reorder_level or 10):
+                    low_stock_items.append({
+                        "product_id": inv.product_id,
+                        "product_name": inv.product.name,
+                        "sku": inv.product.sku,
+                        "quantity_on_hand": inv.quantity_on_hand,
+                        "reorder_level": inv.product.reorder_level,
+                        "branch": inv.branch.name if inv.branch else "Unknown"
+                    })
+            except Exception as e:
+                print(f"Error processing inventory item {inv.id}: {e}")
+                continue
 
-    return {
-        "total_branches": branches,
-        "total_products": products,
-        "total_stock_units": total_stock_units,
-        "total_stock_value": round(total_stock_value, 2),
-        "total_movements": movements,
-        "total_sales": sales,
-        "low_stock_items": low_stock_items,
-        "recent_movements_count": len(recent_movements)
-    }
+        return {
+            "total_branches": branches,
+            "total_products": products,
+            "total_stock_units": total_stock_units,
+            "total_stock_value": round(total_stock_value, 2),
+            "total_movements": movements,
+            "total_sales": sales,
+            "low_stock_items": low_stock_items,
+            "recent_movements_count": len(recent_movements)
+        }
+    except Exception as e:
+        print(f"Dashboard stats error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to load dashboard statistics: {str(e)}")
 
 @router.get("/inventory-by-branch")
 def get_inventory_by_branch(db: Session = Depends(get_db)):
-    branches = db.query(models.Branch).all()
-    result = []
+    try:
+        branches = db.query(models.Branch).all()
+        result = []
 
-    for branch in branches:
-        inventories = db.query(models.InventoryLevel).filter(
-            models.InventoryLevel.branch_id == branch.id
-        ).all()
+        for branch in branches:
+            inventories = db.query(models.InventoryLevel).filter(
+                models.InventoryLevel.branch_id == branch.id
+            ).all()
 
-        total_units = sum(inv.quantity_on_hand for inv in inventories)
-        total_value = sum(inv.quantity_on_hand * inv.product.unit_price for inv in inventories)
+            total_units = sum((inv.quantity_on_hand or 0) for inv in inventories) if inventories else 0
+            total_value = sum(((inv.quantity_on_hand or 0) * (inv.product.unit_price or 0)) for inv in inventories if inv.product) if inventories else 0
 
-        result.append({
-            "branch_id": branch.id,
-            "branch_name": branch.name,
-            "branch_type": branch.branch_type,
-            "total_units": total_units,
-            "total_value": round(total_value, 2),
-            "product_count": len(inventories)
-        })
+            result.append({
+                "branch_id": branch.id,
+                "branch_name": branch.name,
+                "branch_type": branch.branch_type,
+                "total_units": total_units,
+                "total_value": round(total_value, 2),
+                "product_count": len(inventories)
+            })
 
-    return result
+        return result
+    except Exception as e:
+        print(f"Inventory by branch error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to load inventory by branch: {str(e)}")
 
 @router.get("/export-inventory/csv")
 def export_inventory_csv(db: Session = Depends(get_db)):

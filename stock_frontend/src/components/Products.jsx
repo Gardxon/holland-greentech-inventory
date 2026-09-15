@@ -58,7 +58,7 @@ export default function Products() {
             <tbody className="divide-y divide-gray-200">
               {products.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.sku}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{product.sku || '-'}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{product.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{product.category || '-'}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{product.pack_size || '-'}</td>

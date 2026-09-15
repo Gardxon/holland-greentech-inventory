@@ -5,9 +5,17 @@ import os
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./stock_system.db")
+# Use SQLite by default (no external dependencies)
+# Can override with DATABASE_URL env var if needed
+database_url = os.getenv("DATABASE_URL", "").strip()
+if not database_url or "postgresql" in database_url:
+    # Force SQLite if no env var or if postgres URL found
+    DATABASE_URL = "sqlite:///./stock_system.db"
+else:
+    DATABASE_URL = database_url
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+# SQLite requires check_same_thread=False
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

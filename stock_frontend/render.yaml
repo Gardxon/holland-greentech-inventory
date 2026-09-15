@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hgt-stock-system
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+    routes:
+      - path: /
+        matchType: prefix

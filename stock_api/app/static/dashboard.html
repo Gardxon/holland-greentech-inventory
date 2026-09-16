@@ -28,24 +28,80 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
         header {
             background: var(--surface);
             padding: 20px;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-shadow: var(--shadow);
         }
 
-        h1, h2, h3 { color: var(--text); margin: 0 0 10px 0; }
-        h1 { font-size: 32px; }
-        h2 { font-size: 24px; margin-top: 30px; }
-        h3 { font-size: 18px; }
+        header h1 { font-size: 28px; margin: 0; }
+        .user-info {
+            text-align: right;
+            font-size: 14px;
+        }
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .sidebar {
+            background: var(--surface);
+            padding: 20px;
+            border-right: 1px solid var(--border);
+            min-height: calc(100vh - 100px);
+            width: 220px;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin: 8px 0;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-menu button:hover {
+            background: var(--bg);
+        }
+
+        .sidebar-menu button.active {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        h2 { font-size: 24px; margin-bottom: 20px; }
+        h3 { font-size: 18px; margin: 20px 0 10px 0; }
 
         .grid {
             display: grid;
@@ -102,29 +158,16 @@
             transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #2d5740; }
 
-        .btn-primary:hover {
-            background: #2d5740;
-        }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-secondary:hover { background: #6d5a2d; }
 
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #8a2f23; }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
 
         .form-group {
             margin-bottom: 15px;
@@ -174,25 +217,12 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-light);
-        }
+        .modal-content h2 { margin-top: 0; }
 
-        .spinner {
-            border: 3px solid var(--border);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .alert {
@@ -201,129 +231,202 @@
             margin-bottom: 20px;
         }
 
-        .alert-success {
-            background: #E4EEE6;
-            color: #2d5016;
-        }
+        .alert-success { background: #E4EEE6; color: #2d5016; }
+        .alert-error { background: #FBE7E1; color: #A63B2E; }
 
-        .alert-error {
-            background: #FBE7E1;
-            color: #A63B2E;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .tab {
-            padding: 10px 16px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-light);
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
+        .loader { display: none; text-align: center; padding: 20px; }
+        .loader.active { display: block; }
 
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
+        .flex { display: flex; gap: 10px; flex-wrap: wrap; }
+        .flex > * { flex: 1; min-width: 200px; }
 
-        .input-group input { flex: 1; }
-
-        .no-data {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
+        @media (max-width: 768px) {
+            header { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
+    <div id="loginPage" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg);">
+        <div class="card" style="max-width: 400px; width: 90%;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="font-size: 28px; margin-bottom: 10px;">🌱 HGT</h1>
+                <h2 style="font-size: 20px; font-weight: normal;">Stock & Sales System</h2>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>PIN Code</label>
+                    <input type="password" id="loginPin" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+            </form>
+            <div id="loginError" class="alert alert-error" style="display: none; margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <header>
             <h1>🌱 HGT Stock & Sales System</h1>
-            <p style="color: var(--text-light); margin: 5px 0 0 0;">Real-time inventory management across branches</p>
-        </div>
-    </header>
+            <div class="user-info">
+                <div>Logged in as: <strong id="currentUser"></strong></div>
+                <div id="userRole"></div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
 
-    <div class="container">
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" data-tab="dashboard">Dashboard</button>
-            <button class="tab" data-tab="products">Products</button>
-            <button class="tab" data-tab="branches">Branches</button>
-            <button class="tab" data-tab="inventory">Inventory</button>
-            <button class="tab" data-tab="sales">Sales</button>
-        </div>
+        <div style="display: flex;">
+            <div class="sidebar">
+                <ul class="sidebar-menu" id="sidebarMenu"></ul>
+            </div>
 
-        <!-- Alert -->
-        <div id="alert" class="alert alert-success" style="display:none;"></div>
+            <div style="flex: 1;">
+                <div class="container">
+                    <div id="alert" class="alert alert-success" style="display:none;"></div>
 
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <h2>Dashboard</h2>
-            <div class="grid">
-                <div class="stat-card">
-                    <h3>Total Products</h3>
-                    <div class="value" id="totalProducts">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Branches</h3>
-                    <div class="value" id="totalBranches">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Stock Units</h3>
-                    <div class="value" id="totalStock">-</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Today's Sales</h3>
-                    <div class="value" id="todaysSales">-</div>
+                    <!-- Dashboard -->
+                    <div id="dashboard" class="tab-content active">
+                        <h2>Dashboard</h2>
+                        <div class="grid" id="statsGrid"></div>
+                        <h3>Recent Sales</h3>
+                        <table id="recentSalesTable">
+                            <thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Total (TSH)</th><th>Branch</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Admin: Products -->
+                    <div id="admin-products" class="tab-content">
+                        <h2>Manage Products</h2>
+                        <button class="btn btn-primary" onclick="showModal('productModal')">+ Add Product</button>
+                        <table id="productsTable">
+                            <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Unit Price</th><th>Reorder Level</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Admin: Members -->
+                    <div id="admin-members" class="tab-content">
+                        <h2>Manage Members</h2>
+                        <button class="btn btn-primary" onclick="showModal('memberModal')">+ Add Member</button>
+                        <table id="membersTable">
+                            <thead><tr><th>Username</th><th>Branch</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Admin: Reports -->
+                    <div id="admin-reports" class="tab-content">
+                        <h2>Reports</h2>
+                        <div class="card">
+                            <h3>Stock Reports by Branch</h3>
+                            <div class="flex" id="branchStockReports"></div>
+                        </div>
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>Sales Reports by Branch</h3>
+                            <div class="flex" id="branchSalesReports"></div>
+                        </div>
+                        <div class="card" style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="downloadInventoryReport()">📊 Download All Inventory Report (Excel)</button>
+                        </div>
+                    </div>
+
+                    <!-- Branch: Record Sales -->
+                    <div id="branch-sales" class="tab-content">
+                        <h2>Record Sales</h2>
+                        <form onsubmit="recordSale(event)" class="card">
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Product</label>
+                                    <select id="saleProduct" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantity Sold</label>
+                                    <input type="number" id="saleQty" min="1" required>
+                                </div>
+                            </div>
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Unit Price (TSH)</label>
+                                    <input type="number" id="salePrice" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <select id="salePayment">
+                                        <option value="cash">Cash</option>
+                                        <option value="mpesa">M-Pesa</option>
+                                        <option value="bank">Bank</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Customer Name (Optional)</label>
+                                <input type="text" id="saleCustomer">
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <textarea id="saleNotes" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Record Sale</button>
+                        </form>
+
+                        <h3 style="margin-top: 30px;">Today's Sales</h3>
+                        <table id="todaySalesTable">
+                            <thead><tr><th>Time</th><th>Product</th><th>Qty</th><th>Total (TSH)</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Branch: Stock Requests -->
+                    <div id="branch-requests" class="tab-content">
+                        <h2>Stock Requests</h2>
+                        <form onsubmit="createStockRequest(event)" class="card">
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Product</label>
+                                    <select id="reqProduct" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantity Needed</label>
+                                    <input type="number" id="reqQty" min="1" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Reason</label>
+                                <textarea id="reqReason" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </form>
+
+                        <h3 style="margin-top: 30px;">My Stock Requests</h3>
+                        <table id="requestsTable">
+                            <thead><tr><th>Product</th><th>Qty</th><th>Status</th><th>Requested</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <!-- Branch: Download Reports -->
+                    <div id="branch-reports" class="tab-content">
+                        <h2>My Reports</h2>
+                        <div class="card">
+                            <h3>Stock Report</h3>
+                            <p>Download current stock levels for your branch</p>
+                            <button class="btn btn-primary" onclick="downloadStockReport()">📥 Download Stock Report (Excel)</button>
+                        </div>
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>Sales Report</h3>
+                            <p>Download sales history for your branch (last 30 days)</p>
+                            <button class="btn btn-primary" onclick="downloadSalesReport()">📥 Download Sales Report (Excel)</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Products Tab -->
-        <div id="products" class="tab-content">
-            <h2>Products</h2>
-            <div class="input-group">
-                <input type="text" id="productSearch" placeholder="Search products...">
-                <button class="btn btn-primary" onclick="showProductModal()">+ Add Product</button>
-            </div>
-            <div id="productsTable"></div>
-        </div>
-
-        <!-- Branches Tab -->
-        <div id="branches" class="tab-content">
-            <h2>Branches</h2>
-            <button class="btn btn-primary" onclick="showBranchModal()">+ Add Branch</button>
-            <div id="branchesTable"></div>
-        </div>
-
-        <!-- Inventory Tab -->
-        <div id="inventory" class="tab-content">
-            <h2>Inventory</h2>
-            <div id="inventoryContent"></div>
-        </div>
-
-        <!-- Sales Tab -->
-        <div id="sales" class="tab-content">
-            <h2>Sales</h2>
-            <button class="btn btn-primary" onclick="showSaleModal()">+ Record Sale</button>
-            <div id="salesTable"></div>
         </div>
     </div>
 
@@ -337,77 +440,62 @@
                     <input type="text" id="productSku" required>
                 </div>
                 <div class="form-group">
-                    <label>Name</label>
+                    <label>Product Name</label>
                     <input type="text" id="productName" required>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <input type="text" id="productDesc">
+                    <label>Category</label>
+                    <input type="text" id="productCategory">
                 </div>
                 <div class="form-group">
-                    <label>Unit Price (TZS)</label>
-                    <input type="number" id="productPrice" step="0.01">
+                    <label>Unit Price (TSH)</label>
+                    <input type="number" id="productPrice" step="0.01" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Product</button>
-                <button type="button" class="btn" onclick="closeModal('productModal')">Cancel</button>
+                <div class="form-group">
+                    <label>Reorder Level</label>
+                    <input type="number" id="productReorder" value="10">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn" onclick="closeModal('productModal')">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="branchModal" class="modal">
+    <div id="memberModal" class="modal">
         <div class="modal-content">
-            <h2>Add Branch</h2>
-            <form onsubmit="saveBranch(event)">
+            <h2>Add Member</h2>
+            <form onsubmit="saveMember(event)">
                 <div class="form-group">
-                    <label>Branch Name</label>
-                    <input type="text" id="branchName" required>
+                    <label>Username</label>
+                    <input type="text" id="memberUsername" required>
                 </div>
                 <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" id="branchLocation" required>
-                </div>
-                <div class="form-group">
-                    <label>Type</label>
-                    <select id="branchType">
-                        <option value="warehouse">Warehouse</option>
-                        <option value="sub_branch">Sub-branch</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Save Branch</button>
-                <button type="button" class="btn" onclick="closeModal('branchModal')">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="saleModal" class="modal">
-        <div class="modal-content">
-            <h2>Record Sale</h2>
-            <form onsubmit="saveSale(event)">
-                <div class="form-group">
-                    <label>Product</label>
-                    <select id="saleProduct" required></select>
-                </div>
-                <div class="form-group">
-                    <label>Quantity</label>
-                    <input type="number" id="saleQty" required min="1">
-                </div>
-                <div class="form-group">
-                    <label>Price per Unit</label>
-                    <input type="number" id="salePrice" step="0.01" required>
+                    <label>PIN Code</label>
+                    <input type="password" id="memberPin" required>
                 </div>
                 <div class="form-group">
                     <label>Branch</label>
-                    <select id="saleBranch" required></select>
+                    <select id="memberBranch" required></select>
                 </div>
-                <button type="submit" class="btn btn-primary">Record Sale</button>
-                <button type="button" class="btn" onclick="closeModal('saleModal')">Cancel</button>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="memberAdmin"> Admin User
+                    </label>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn" onclick="closeModal('memberModal')">Cancel</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
         const API_BASE = window.location.origin;
-        let data = { products: [], branches: [], sales: [], inventory: {} };
+        let currentUser = null;
+        let data = { products: [], branches: [], sales: [], users: [], inventory: {}, requests: [] };
 
         // API calls
         async function api(endpoint, options = {}) {
@@ -416,7 +504,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     ...options
                 });
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                if (!response.ok) {
+                    if (response.status === 401) logout();
+                    throw new Error(`API error: ${response.status}`);
+                }
                 return await response.json();
             } catch (err) {
                 showAlert(`Error: ${err.message}`, 'error');
@@ -425,145 +516,250 @@
             }
         }
 
-        // Load data
+        // Auth functions
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const pin = document.getElementById('loginPin').value;
+
+            const result = await api('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, pin })
+            });
+
+            if (result) {
+                currentUser = result;
+                sessionStorage.setItem('user', JSON.stringify(result));
+                showApp();
+                loadData();
+            } else {
+                document.getElementById('loginError').textContent = 'Invalid credentials';
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            currentUser = null;
+            location.reload();
+        }
+
+        // UI functions
+        function showApp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('currentUser').textContent = currentUser.username;
+            document.getElementById('userRole').textContent = currentUser.is_admin ? '(Admin)' : `(${currentUser.branch_name})`;
+            setupSidebar();
+        }
+
+        function setupSidebar() {
+            const menu = document.getElementById('sidebarMenu');
+            menu.innerHTML = '';
+
+            // Dashboard
+            addMenuItem('📊 Dashboard', 'dashboard', menu);
+
+            if (currentUser.is_admin) {
+                addMenuItem('➕ Add Products', 'admin-products', menu);
+                addMenuItem('👥 Manage Members', 'admin-members', menu);
+                addMenuItem('📋 Reports', 'admin-reports', menu);
+            } else {
+                addMenuItem('💰 Record Sales', 'branch-sales', menu);
+                addMenuItem('📦 Stock Requests', 'branch-requests', menu);
+                addMenuItem('📊 My Reports', 'branch-reports', menu);
+            }
+        }
+
+        function addMenuItem(label, tab, menu) {
+            const btn = document.createElement('button');
+            btn.textContent = label;
+            btn.className = tab === 'dashboard' ? 'active' : '';
+            btn.onclick = () => switchTab(tab);
+            const li = document.createElement('li');
+            li.appendChild(btn);
+            menu.appendChild(li);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            document.querySelectorAll('.sidebar-menu button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function showModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function showAlert(msg, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = msg;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 3000);
+        }
+
+        // Data functions
         async function loadData() {
-            const [products, branches, sales] = await Promise.all([
+            const [products, branches, sales, users] = await Promise.all([
                 api('/products'),
                 api('/branches'),
-                api('/sales')
+                api('/sales'),
+                currentUser.is_admin ? api('/auth/members') : Promise.resolve([])
             ]);
 
             if (products) data.products = products;
             if (branches) data.branches = branches;
             if (sales) data.sales = sales;
+            if (users) data.users = users;
 
             updateDashboard();
+            populateSelects();
             updateTables();
         }
 
         function updateDashboard() {
-            document.getElementById('totalProducts').textContent = data.products.length;
-            document.getElementById('totalBranches').textContent = data.branches.length;
+            const html = `
+                <div class="stat-card">
+                    <h3>Total Products</h3>
+                    <div class="value">${data.products.length}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Branches</h3>
+                    <div class="value">${data.branches.length}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Today's Sales</h3>
+                    <div class="value">TZS ${getTodaysSales().toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Members</h3>
+                    <div class="value">${data.users.length}</div>
+                </div>
+            `;
+            document.getElementById('statsGrid').innerHTML = html;
 
-            const totalStock = data.products.reduce((sum, p) => sum + (p.quantity || 0), 0);
-            document.getElementById('totalStock').textContent = totalStock.toLocaleString();
+            updateRecentSalesTable();
+        }
 
-            const todaySales = data.sales
-                .filter(s => new Date(s.sale_date).toDateString() === new Date().toDateString())
-                .reduce((sum, s) => sum + (s.quantity * s.price), 0);
-            document.getElementById('todaysSales').textContent = 'TZS ' + todaySales.toLocaleString();
+        function getTodaysSales() {
+            const today = new Date().toDateString();
+            return data.sales
+                .filter(s => new Date(s.created_at).toDateString() === today)
+                .reduce((sum, s) => sum + (s.quantity_sold * s.unit_price), 0);
+        }
+
+        function updateRecentSalesTable() {
+            const tbody = document.querySelector('#recentSalesTable tbody');
+            tbody.innerHTML = data.sales.slice(-10).reverse().map(s => `
+                <tr>
+                    <td>${new Date(s.created_at).toLocaleDateString()}</td>
+                    <td>${s.product.name}</td>
+                    <td>${s.quantity_sold}</td>
+                    <td>TZS ${(s.quantity_sold * s.unit_price).toLocaleString()}</td>
+                    <td>${s.branch.name}</td>
+                </tr>
+            `).join('');
         }
 
         function updateTables() {
-            // Products
-            let html = '<table><thead><tr><th>SKU</th><th>Name</th><th>Description</th><th>Price</th><th>Actions</th></tr></thead><tbody>';
-            data.products.forEach(p => {
-                html += `<tr>
+            // Products table
+            const productsHtml = data.products.map(p => `
+                <tr>
                     <td>${p.sku}</td>
                     <td>${p.name}</td>
-                    <td>${p.description || '-'}</td>
+                    <td>${p.category || '-'}</td>
                     <td>TZS ${(p.unit_price || 0).toLocaleString()}</td>
-                    <td><button class="btn btn-sm btn-secondary" onclick="editProduct(${p.id})">Edit</button></td>
-                </tr>`;
-            });
-            html += '</tbody></table>';
-            document.getElementById('productsTable').innerHTML = html || '<div class="no-data">No products yet</div>';
+                    <td>${p.reorder_level}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button></td>
+                </tr>
+            `).join('');
+            document.querySelector('#productsTable tbody').innerHTML = productsHtml || '<tr><td colspan="6">No products</td></tr>';
 
-            // Branches
-            html = '<table><thead><tr><th>Name</th><th>Location</th><th>Type</th><th>Actions</th></tr></thead><tbody>';
-            data.branches.forEach(b => {
-                html += `<tr>
-                    <td>${b.name}</td>
-                    <td>${b.location}</td>
-                    <td>${b.branch_type}</td>
-                    <td><button class="btn btn-sm btn-secondary" onclick="editBranch(${b.id})">Edit</button></td>
-                </tr>`;
-            });
-            html += '</tbody></table>';
-            document.getElementById('branchesTable').innerHTML = html || '<div class="no-data">No branches yet</div>';
-
-            // Sales
-            html = '<table><thead><tr><th>Product</th><th>Quantity</th><th>Price</th><th>Branch</th><th>Date</th></tr></thead><tbody>';
-            data.sales.slice(-50).reverse().forEach(s => {
-                const product = data.products.find(p => p.id === s.product_id);
-                const branch = data.branches.find(b => b.id === s.branch_id);
-                html += `<tr>
-                    <td>${product?.name || 'Unknown'}</td>
-                    <td>${s.quantity}</td>
-                    <td>TZS ${(s.price || 0).toLocaleString()}</td>
-                    <td>${branch?.name || 'Unknown'}</td>
-                    <td>${new Date(s.sale_date).toLocaleDateString()}</td>
-                </tr>`;
-            });
-            html += '</tbody></table>';
-            document.getElementById('salesTable').innerHTML = html || '<div class="no-data">No sales yet</div>';
-
-            // Populate select dropdowns
-            const productSelect = document.getElementById('saleProduct');
-            productSelect.innerHTML = data.products.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-
-            const branchSelect = document.getElementById('saleBranch');
-            branchSelect.innerHTML = data.branches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+            // Members table
+            const membersHtml = data.users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td>${u.branch_name || 'N/A'}</td>
+                    <td>${u.is_admin ? 'Admin' : 'Staff'}</td>
+                    <td>Active</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deactivateMember(${u.id})">Deactivate</button></td>
+                </tr>
+            `).join('');
+            document.querySelector('#membersTable tbody').innerHTML = membersHtml || '<tr><td colspan="5">No members</td></tr>';
         }
 
-        // Modal functions
-        function showProductModal() { document.getElementById('productModal').classList.add('active'); }
-        function showBranchModal() { document.getElementById('branchModal').classList.add('active'); }
-        function showSaleModal() { document.getElementById('saleModal').classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function populateSelects() {
+            // Products select
+            document.getElementById('saleProduct').innerHTML = data.products.map(p =>
+                `<option value="${p.id}">${p.name} (${p.sku})</option>`
+            ).join('');
 
-        // Save functions
+            document.getElementById('reqProduct').innerHTML = data.products.map(p =>
+                `<option value="${p.id}">${p.name}</option>`
+            ).join('');
+
+            // Branches select
+            document.getElementById('memberBranch').innerHTML = data.branches.map(b =>
+                `<option value="${b.id}">${b.name}</option>`
+            ).join('');
+        }
+
+        // Actions
         async function saveProduct(e) {
             e.preventDefault();
             const product = {
                 sku: document.getElementById('productSku').value,
                 name: document.getElementById('productName').value,
-                description: document.getElementById('productDesc').value,
-                unit_price: parseFloat(document.getElementById('productPrice').value) || 0
+                category: document.getElementById('productCategory').value,
+                unit_price: parseFloat(document.getElementById('productPrice').value),
+                reorder_level: parseInt(document.getElementById('productReorder').value)
             };
 
-            const result = await api('/products', {
+            const result = await api('/api/admin/products', {
                 method: 'POST',
                 body: JSON.stringify(product)
             });
 
             if (result) {
-                showAlert('Product saved!', 'success');
+                showAlert('Product added!', 'success');
                 closeModal('productModal');
                 loadData();
                 e.target.reset();
             }
         }
 
-        async function saveBranch(e) {
+        async function saveMember(e) {
             e.preventDefault();
-            const branch = {
-                name: document.getElementById('branchName').value,
-                location: document.getElementById('branchLocation').value,
-                branch_type: document.getElementById('branchType').value
+            const member = {
+                username: document.getElementById('memberUsername').value,
+                pin: document.getElementById('memberPin').value,
+                branch_id: parseInt(document.getElementById('memberBranch').value),
+                is_admin: document.getElementById('memberAdmin').checked
             };
 
-            const result = await api('/branches', {
+            const result = await api('/auth/members', {
                 method: 'POST',
-                body: JSON.stringify(branch)
+                body: JSON.stringify(member)
             });
 
             if (result) {
-                showAlert('Branch saved!', 'success');
-                closeModal('branchModal');
+                showAlert('Member added!', 'success');
+                closeModal('memberModal');
                 loadData();
                 e.target.reset();
             }
         }
 
-        async function saveSale(e) {
+        async function recordSale(e) {
             e.preventDefault();
             const sale = {
                 product_id: parseInt(document.getElementById('saleProduct').value),
-                quantity: parseInt(document.getElementById('saleQty').value),
-                price: parseFloat(document.getElementById('salePrice').value),
-                branch_id: parseInt(document.getElementById('saleBranch').value),
-                sale_date: new Date().toISOString()
+                branch_id: currentUser.branch_id,
+                quantity_sold: parseInt(document.getElementById('saleQty').value),
+                unit_price: parseFloat(document.getElementById('salePrice').value),
+                payment_method: document.getElementById('salePayment').value,
+                notes: document.getElementById('saleNotes').value
             };
 
             const result = await api('/sales', {
@@ -573,40 +769,76 @@
 
             if (result) {
                 showAlert('Sale recorded!', 'success');
-                closeModal('saleModal');
                 loadData();
                 e.target.reset();
             }
         }
 
-        function showAlert(msg, type) {
-            const alert = document.getElementById('alert');
-            alert.textContent = msg;
-            alert.className = `alert alert-${type}`;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 3000);
+        async function createStockRequest(e) {
+            e.preventDefault();
+            const request = {
+                product_id: parseInt(document.getElementById('reqProduct').value),
+                from_branch_id: currentUser.branch_id,
+                to_branch_id: currentUser.branch_id,
+                quantity: parseInt(document.getElementById('reqQty').value),
+                reason: document.getElementById('reqReason').value
+            };
+
+            const result = await api('/stock-requests', {
+                method: 'POST',
+                body: JSON.stringify(request)
+            });
+
+            if (result) {
+                showAlert('Stock request submitted!', 'success');
+                loadData();
+                e.target.reset();
+            }
         }
 
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-        });
+        async function deleteProduct(id) {
+            if (confirm('Delete this product?')) {
+                const result = await api(`/api/admin/products/${id}`, { method: 'DELETE' });
+                if (result) {
+                    showAlert('Product deleted!', 'success');
+                    loadData();
+                }
+            }
+        }
 
-        // Close modals on background click
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.classList.remove('active');
-            });
-        });
+        async function deactivateMember(id) {
+            if (confirm('Deactivate this member?')) {
+                const result = await api(`/auth/members/${id}`, { method: 'DELETE' });
+                if (result) {
+                    showAlert('Member deactivated!', 'success');
+                    loadData();
+                }
+            }
+        }
 
-        // Initialize
-        loadData();
-        setInterval(loadData, 5000); // Refresh every 5 seconds
+        // Reports
+        function downloadStockReport() {
+            window.open(`/reports/stock-report/${currentUser.branch_id}`, '_blank');
+        }
+
+        function downloadSalesReport() {
+            window.open(`/reports/sales-report/${currentUser.branch_id}`, '_blank');
+        }
+
+        function downloadInventoryReport() {
+            window.open('/reports/inventory-report', '_blank');
+        }
+
+        // Init
+        const storedUser = sessionStorage.getItem('user');
+        if (storedUser) {
+            currentUser = JSON.parse(storedUser);
+            showApp();
+            loadData();
+        }
+
+        // Auto-refresh
+        setInterval(loadData, 30000);
     </script>
 </body>
 </html>

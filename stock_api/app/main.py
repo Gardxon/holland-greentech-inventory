@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.database import engine, Base, get_db
-from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin
+from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports
 import app.models as models
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(branches.router)
 app.include_router(products.router)
 app.include_router(inventory.router)
@@ -32,6 +33,7 @@ app.include_router(sales.router)
 app.include_router(stock_requests.router)
 app.include_router(dashboard.router)
 app.include_router(admin.router)
+app.include_router(reports.router)
 
 dist_dir = Path(__file__).parent.parent.parent / "stock_frontend" / "dist"
 

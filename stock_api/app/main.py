@@ -58,7 +58,7 @@ if dist_dir.exists():
 
 @app.get("/health")
 def health_check():
-    # Force deployment refresh
+    # Deployment v2
     return {"status": "healthy"}
 
 @app.post("/seed-data")

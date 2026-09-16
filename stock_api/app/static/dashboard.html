@@ -587,9 +587,26 @@
                     <!-- Admin: Products -->
                     <div id="admin-products" class="tab-content">
                         <h2>Manage Products</h2>
-                        <button class="btn btn-primary" onclick="showModal('productModal')">+ Add Product</button>
+                        <div class="flex" style="margin-bottom: 20px; gap: 10px;">
+                            <button class="btn btn-primary" onclick="showModal('productModal')">+ Add Product</button>
+                            <button class="btn" onclick="toggleBulkImport()" style="background: #2D5016; color: white;">📤 Bulk Import</button>
+                        </div>
+
+                        <!-- Bulk Import Section -->
+                        <div id="bulkImportSection" style="display: none; background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 15px;">📤 Bulk Import Products from CSV</h3>
+                            <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                                Upload a CSV file with columns: sku, product_code, product_name, category, pack_size, unit_price, reorder_level
+                            </p>
+                            <div class="flex" style="gap: 10px; align-items: center;">
+                                <input type="file" id="bulkImportFile" accept=".csv" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <button onclick="handleBulkImport()" class="btn btn-primary">Upload & Import</button>
+                            </div>
+                            <div id="bulkImportStatus" style="margin-top: 15px;"></div>
+                        </div>
+
                         <table id="productsTable">
-                            <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Unit Price</th><th>Reorder Level</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Pack Size</th><th>Unit Price</th><th>Reorder Level</th><th>Actions</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -1476,12 +1493,13 @@
                     <td>${p.sku}</td>
                     <td>${p.name}</td>
                     <td>${p.category || '-'}</td>
+                    <td>${p.pack_size || '-'}</td>
                     <td>TZS ${(p.unit_price || 0).toLocaleString()}</td>
                     <td>${p.reorder_level}</td>
                     <td><button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button></td>
                 </tr>
             `).join('');
-            document.querySelector('#productsTable tbody').innerHTML = productsHtml || '<tr><td colspan="6">No products</td></tr>';
+            document.querySelector('#productsTable tbody').innerHTML = productsHtml || '<tr><td colspan="7">No products</td></tr>';
 
             // Members table
             const membersHtml = data.users.map(u => `
@@ -1670,6 +1688,52 @@
                     loadAdmins();
                 }
             }
+        }
+
+        function toggleBulkImport() {
+            const section = document.getElementById('bulkImportSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function handleBulkImport() {
+            const fileInput = document.getElementById('bulkImportFile');
+            const statusDiv = document.getElementById('bulkImportStatus');
+
+            if (!fileInput.files[0]) {
+                showAlert('Please select a CSV file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            statusDiv.innerHTML = '<p style="color: #1976d2;">Uploading and importing products...</p>';
+
+            fetch('/products/bulk-import', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    statusDiv.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 15px; border-radius: 4px; color: #2e7d32;">
+                            <strong>Import Successful!</strong><br>
+                            Imported: ${result.imported} products<br>
+                            Skipped: ${result.skipped} (duplicates)
+                            ${result.errors.length > 0 ? '<br><br><strong>Errors:</strong><br>' + result.errors.join('<br>') : ''}
+                        </div>
+                    `;
+                    fileInput.value = '';
+                    loadData();
+                } else {
+                    showAlert(`Import failed: ${result.detail}`, 'error');
+                }
+            })
+            .catch(err => {
+                statusDiv.innerHTML = `<div style="color: #d32f2f;">Error: ${err.message}</div>`;
+                showAlert(`Import error: ${err.message}`, 'error');
+            });
         }
 
         function toggleMembersView(view) {

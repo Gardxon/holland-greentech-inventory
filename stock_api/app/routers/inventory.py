@@ -20,6 +20,11 @@ def format_inventory_with_product(inventory_level):
         "stock_value": inventory_level.quantity_on_hand * inventory_level.product.unit_price
     }
 
+@router.get("/", response_model=list[schemas.InventoryLevel])
+def get_all_inventory(db: Session = Depends(get_db)):
+    inventories = db.query(models.InventoryLevel).all()
+    return inventories
+
 @router.get("/branch/{branch_id}", response_model=list[schemas.InventoryLevelWithProduct])
 def get_branch_inventory(branch_id: int, db: Session = Depends(get_db)):
     branch = db.query(models.Branch).filter(models.Branch.id == branch_id).first()

@@ -438,6 +438,58 @@
                     <div id="dashboard" class="tab-content active">
                         <h2>Dashboard</h2>
                         <div class="grid" id="statsGrid"></div>
+
+                        <!-- Admin Inventory Overview -->
+                        <div id="adminInventorySection" style="display: none; margin-top: 40px;">
+                            <h3 style="margin-top: 30px; margin-bottom: 20px;">📦 Real-Time Inventory Overview</h3>
+
+                            <!-- Warehouse Stock Summary -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin-bottom: 15px; color: #3A6B4F;">🏭 Warehouse Stock Levels</h4>
+                                <div id="warehouseStockGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
+                            </div>
+
+                            <!-- Branch Stock Summary -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin-bottom: 15px; color: #3A6B4F;">🏢 Branch Stock Levels</h4>
+                                <div id="branchStockGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;"></div>
+                            </div>
+
+                            <!-- Stock Value Summary -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin-bottom: 15px; color: #3A6B4F;">💰 Stock Value by Branch/Warehouse</h4>
+                                <table id="stockValueTable" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #f5f5f5; border-bottom: 2px solid #3A6B4F;">
+                                            <th style="padding: 12px; text-align: left;">Location</th>
+                                            <th style="padding: 12px; text-align: left;">Type</th>
+                                            <th style="padding: 12px; text-align: right;">Total Units</th>
+                                            <th style="padding: 12px; text-align: right;">Total Value (TSH)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Recent Stock Movements -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin-bottom: 15px; color: #3A6B4F;">🔄 Recent Stock Movements</h4>
+                                <table id="stockMovementsTable" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #f5f5f5; border-bottom: 2px solid #3A6B4F;">
+                                            <th style="padding: 12px; text-align: left;">Time</th>
+                                            <th style="padding: 12px; text-align: left;">Product</th>
+                                            <th style="padding: 12px; text-align: left;">From</th>
+                                            <th style="padding: 12px; text-align: left;">To</th>
+                                            <th style="padding: 12px; text-align: center;">Qty</th>
+                                            <th style="padding: 12px; text-align: left;">Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockMovementsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <h3>Recent Sales</h3>
                         <table id="recentSalesTable">
                             <thead><tr><th>Date</th><th>Product</th><th>Qty</th><th>Total (TSH)</th><th>Branch</th></tr></thead>
@@ -772,7 +824,7 @@
     <script>
         const API_BASE = window.location.origin;
         let currentUser = null;
-        let data = { products: [], branches: [], sales: [], users: [], customers: [], stock_requests: [], inventory: {}, requests: [] };
+        let data = { products: [], branches: [], sales: [], users: [], customers: [], stock_requests: [], inventory_levels: [], inventory: {}, requests: [] };
 
         // API calls
         async function api(endpoint, options = {}) {
@@ -947,13 +999,14 @@
                 console.error('User not logged in');
                 return;
             }
-            const [products, branches, sales, users, customers, stock_requests] = await Promise.all([
+            const [products, branches, sales, users, customers, stock_requests, inventory_levels] = await Promise.all([
                 api('/products'),
                 api('/branches'),
                 api('/sales'),
                 currentUser.is_admin ? api('/auth/members') : Promise.resolve([]),
                 api('/customers'),
-                api('/stock-requests')
+                api('/stock-requests'),
+                currentUser.is_admin ? api('/inventory') : Promise.resolve([])
             ]);
 
             if (products) data.products = products;
@@ -962,6 +1015,7 @@
             if (users) data.users = users;
             if (customers) data.customers = customers;
             if (stock_requests) data.stock_requests = stock_requests;
+            if (inventory_levels) data.inventory_levels = inventory_levels;
 
             updateDashboard();
             populateSelects();
@@ -989,7 +1043,124 @@
             `;
             document.getElementById('statsGrid').innerHTML = html;
 
+            // Show inventory overview for admins
+            if (currentUser && currentUser.is_admin) {
+                document.getElementById('adminInventorySection').style.display = 'block';
+                updateInventoryOverview();
+            }
+
             updateRecentSalesTable();
+        }
+
+        function updateInventoryOverview() {
+            updateWarehouseStockLevels();
+            updateBranchStockLevels();
+            updateStockValueSummary();
+            updateStockMovementsTable();
+        }
+
+        function updateWarehouseStockLevels() {
+            const warehouses = data.branches.filter(b => b.branch_type === 'warehouse');
+            const html = warehouses.map(warehouse => {
+                const warehouseInventory = data.inventory_levels.filter(inv => inv.branch_id === warehouse.id);
+                const totalUnits = warehouseInventory.reduce((sum, inv) => sum + inv.quantity_on_hand, 0);
+                const productCount = warehouseInventory.length;
+                return `
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 4px solid #3A6B4F;">
+                        <div style="font-weight: bold; color: #3A6B4F; margin-bottom: 8px;">${warehouse.name} 🏭</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #2D5016; margin-bottom: 5px;">${totalUnits}</div>
+                        <div style="font-size: 12px; color: #666;">Total Units • ${productCount} Products</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;">${warehouse.location}</div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('warehouseStockGrid').innerHTML = html;
+        }
+
+        function updateBranchStockLevels() {
+            const branches = data.branches.filter(b => b.branch_type !== 'warehouse');
+            const html = branches.map(branch => {
+                const branchInventory = data.inventory_levels.filter(inv => inv.branch_id === branch.id);
+                const totalUnits = branchInventory.reduce((sum, inv) => sum + inv.quantity_on_hand, 0);
+                const productCount = branchInventory.length;
+                return `
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border-left: 4px solid #8A6D3B;">
+                        <div style="font-weight: bold; color: #8A6D3B; margin-bottom: 8px;">${branch.name} 🏢</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #9C6A0A; margin-bottom: 5px;">${totalUnits}</div>
+                        <div style="font-size: 12px; color: #666;">Total Units • ${productCount} Products</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 5px;">${branch.location}</div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('branchStockGrid').innerHTML = html;
+        }
+
+        function updateStockValueSummary() {
+            const locationsData = data.branches.map(branch => {
+                const inventory = data.inventory_levels.filter(inv => inv.branch_id === branch.id);
+                const totalValue = inventory.reduce((sum, inv) => {
+                    const product = data.products.find(p => p.id === inv.product_id);
+                    return sum + (inv.quantity_on_hand * (product?.unit_price || 0));
+                }, 0);
+                const totalUnits = inventory.reduce((sum, inv) => sum + inv.quantity_on_hand, 0);
+                return { name: branch.name, type: branch.branch_type, value: totalValue, units: totalUnits };
+            }).sort((a, b) => b.value - a.value);
+
+            const tbody = document.querySelector('#stockValueTable tbody');
+            tbody.innerHTML = locationsData.map(loc => `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">${loc.name}</td>
+                    <td style="padding: 12px;">${loc.type === 'warehouse' ? '🏭 Warehouse' : '🏢 Branch'}</td>
+                    <td style="padding: 12px; text-align: right;">${loc.units}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold; color: #2D5016;">TZS ${loc.value.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStockMovementsTable() {
+            const movements = [];
+            // Include stock requests and sales as movements
+            data.stock_requests?.forEach(req => {
+                const fromBranch = data.branches.find(b => b.id === req.from_branch_id);
+                const toBranch = data.branches.find(b => b.id === req.to_branch_id);
+                const product = data.products.find(p => p.id === req.product_id);
+                movements.push({
+                    time: new Date(req.created_at),
+                    product: product?.name || 'Unknown',
+                    from: fromBranch?.name || 'Unknown',
+                    to: toBranch?.name || 'Unknown',
+                    qty: req.quantity,
+                    type: req.request_type === 'return' ? '↩️ Return' : '→ Request'
+                });
+            });
+
+            data.sales?.forEach(sale => {
+                const branch = data.branches.find(b => b.id === sale.branch_id);
+                const product = data.products.find(p => p.id === sale.product_id);
+                movements.push({
+                    time: new Date(sale.created_at),
+                    product: product?.name || 'Unknown',
+                    from: branch?.name || 'Unknown',
+                    to: '👤 Customer',
+                    qty: sale.quantity_sold,
+                    type: '💰 Sale'
+                });
+            });
+
+            // Sort by time descending
+            movements.sort((a, b) => b.time - a.time);
+
+            const tbody = document.getElementById('stockMovementsTableBody');
+            tbody.innerHTML = movements.slice(0, 20).map(m => `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">${m.time.toLocaleTimeString()}</td>
+                    <td style="padding: 12px;">${m.product}</td>
+                    <td style="padding: 12px;">${m.from}</td>
+                    <td style="padding: 12px;">${m.to}</td>
+                    <td style="padding: 12px; text-align: center; font-weight: bold;">${m.qty}</td>
+                    <td style="padding: 12px;">${m.type}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">No recent movements</td></tr>';
         }
 
         function getTodaysSales() {

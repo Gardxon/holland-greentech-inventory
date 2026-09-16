@@ -118,7 +118,10 @@
       "Bash(mkdir -p \"C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\stock_api\\\\app\\\\static\" && cp \"C:\\\\Users\\\\User\\\\.claude\\\\projects\\\\C--Users-User-Desktop-INVETORY-FILE-AND-SALES\\\\4d97398d-1ed4-4fb3-b0b3-062ca462fa83\\\\tool-results\\\\artifact-3e038fdc-1788951901-9cbc.html\" \"C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\stock_api\\\\app\\\\static\\\\dashboard.html\")",
       "Bash(git commit -m 'Integrate artifact dashboard with backend *)",
       "Bash(find \"C:\\\\\\\\Users\\\\\\\\User\\\\\\\\Desktop\\\\\\\\INVETORY FILE AND SALES\\\\\\\\stock_api\\\\\\\\app\\\\\\\\routers\" -name \"*.py\" -type f)",
-      "Bash(git commit -m 'Complete system rebuild: add authentication, reports, and full-featured dashboard *)"
+      "Bash(git commit -m 'Complete system rebuild: add authentication, reports, and full-featured dashboard *)",
+      "Bash(git commit -m 'Fix database migration endpoint SQL syntax *)",
+      "Bash(git commit -m 'Improve database migration endpoint with ALTER TABLE approach *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

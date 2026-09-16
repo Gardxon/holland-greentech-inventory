@@ -37,11 +37,19 @@ dist_dir = Path(__file__).parent.parent.parent / "stock_frontend" / "dist"
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
+    # Serve artifact dashboard
+    static_dir = Path(__file__).parent / "static"
+    dashboard_path = static_dir / "dashboard.html"
+    if dashboard_path.exists():
+        with open(dashboard_path, 'r', encoding='utf-8') as f:
+            return f.read()
+
+    # Fall back to React build
     if dist_dir.exists():
         index_path = dist_dir / "index.html"
         with open(index_path, 'r', encoding='utf-8') as f:
             return f.read()
-    return "<h1>React dashboard not found. Build the frontend first.</h1>"
+    return "<h1>Dashboard not found</h1>"
 
 if dist_dir.exists():
     app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")

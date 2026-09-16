@@ -104,7 +104,19 @@
       "Bash(curl -s http://localhost:8000/api/admin/customers)",
       "Bash(curl -s \"http://localhost:8000/sales/?skip=0&limit=1\")",
       "Bash(./node_modules/.bin/vite build *)",
-      "Bash(\"/c/Program Files/nodejs/npm\" run build)"
+      "Bash(\"/c/Program Files/nodejs/npm\" run build)",
+      "Bash(git commit -m 'Remove psycopg2-binary dependency for Render compatibility *)",
+      "Bash(git commit -m 'Use stable Python versions without Rust dependencies *)",
+      "Bash(git commit -m 'Specify Python 3.11.9 for Render compatibility *)",
+      "Bash(git commit -m 'Use latest compatible versions for Python 3.14 *)",
+      "Bash(git commit -m 'Change database to SQLite for Render deployment *)",
+      "Bash(git commit -m 'Force SQLite database regardless of environment *)",
+      "Bash(git commit -m 'Fix optional SKU field in Products component *)",
+      "Bash(git commit -m 'Add deployment guides for team accessibility *)",
+      "mcp__visualize__read_me",
+      "mcp__visualize__show_widget",
+      "Bash(mkdir -p \"C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\stock_api\\\\app\\\\static\" && cp \"C:\\\\Users\\\\User\\\\.claude\\\\projects\\\\C--Users-User-Desktop-INVETORY-FILE-AND-SALES\\\\4d97398d-1ed4-4fb3-b0b3-062ca462fa83\\\\tool-results\\\\artifact-3e038fdc-1788951901-9cbc.html\" \"C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\stock_api\\\\app\\\\static\\\\dashboard.html\")",
+      "Bash(git commit -m 'Integrate artifact dashboard with backend *)"
     ]
   }
 }

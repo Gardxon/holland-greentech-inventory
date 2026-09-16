@@ -441,6 +441,12 @@
 
                         <!-- Admin Inventory Overview -->
                         <div id="adminInventorySection" style="display: none; margin-top: 40px;">
+                            <!-- Low Stock Alerts -->
+                            <div id="lowStockAlertsSection" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800; display: none;">
+                                <h4 style="margin-bottom: 10px; color: #cc6600;">⚠️ Low Stock Alerts</h4>
+                                <div id="lowStockAlertsList" style="font-size: 14px;"></div>
+                            </div>
+
                             <h3 style="margin-top: 30px; margin-bottom: 20px;">📦 Real-Time Inventory Overview</h3>
 
                             <!-- Warehouse Stock Summary -->
@@ -472,7 +478,7 @@
                             </div>
 
                             <!-- Recent Stock Movements -->
-                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
                                 <h4 style="margin-bottom: 15px; color: #3A6B4F;">🔄 Recent Stock Movements</h4>
                                 <table id="stockMovementsTable" style="width: 100%; border-collapse: collapse;">
                                     <thead>
@@ -486,6 +492,25 @@
                                         </tr>
                                     </thead>
                                     <tbody id="stockMovementsTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- Products Inventory Grid -->
+                            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <h4 style="margin-bottom: 15px; color: #3A6B4F;">📦 Products Inventory Status</h4>
+                                <table id="productsInventoryTable" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #f5f5f5; border-bottom: 2px solid #3A6B4F;">
+                                            <th style="padding: 12px; text-align: left;">SKU</th>
+                                            <th style="padding: 12px; text-align: left;">Product Name</th>
+                                            <th style="padding: 12px; text-align: right;">Unit Price (TSH)</th>
+                                            <th style="padding: 12px; text-align: center;">Total Stock</th>
+                                            <th style="padding: 12px; text-align: center;">Reorder Level</th>
+                                            <th style="padding: 12px; text-align: right;">Total Value (TSH)</th>
+                                            <th style="padding: 12px; text-align: center;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsInventoryTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -1057,6 +1082,74 @@
             updateBranchStockLevels();
             updateStockValueSummary();
             updateStockMovementsTable();
+            updateLowStockAlerts();
+            updateProductsInventoryStatus();
+        }
+
+        function updateLowStockAlerts() {
+            const lowStockProducts = [];
+            data.branches.filter(b => b.branch_type === 'warehouse').forEach(warehouse => {
+                data.inventory_levels.filter(inv => inv.branch_id === warehouse.id).forEach(inv => {
+                    const product = data.products.find(p => p.id === inv.product_id);
+                    if (product && inv.quantity_on_hand < product.reorder_level) {
+                        lowStockProducts.push({
+                            warehouse: warehouse.name,
+                            product: product.name,
+                            current: inv.quantity_on_hand,
+                            reorderLevel: product.reorder_level,
+                            shortage: product.reorder_level - inv.quantity_on_hand
+                        });
+                    }
+                });
+            });
+
+            const alertsSection = document.getElementById('lowStockAlertsSection');
+            if (lowStockProducts.length > 0) {
+                alertsSection.style.display = 'block';
+                const alertsList = document.getElementById('lowStockAlertsList');
+                alertsList.innerHTML = lowStockProducts.map(item => `
+                    <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border-left: 3px solid #ff9800;">
+                        <strong>${item.product}</strong> at <strong>${item.warehouse}</strong><br>
+                        Current: ${item.current} units | Reorder Level: ${item.reorderLevel} | <span style="color: #d32f2f; font-weight: bold;">Shortage: ${item.shortage} units</span>
+                    </div>
+                `).join('');
+            } else {
+                alertsSection.style.display = 'none';
+            }
+        }
+
+        function updateProductsInventoryStatus() {
+            const productStats = data.products.map(product => {
+                const inventory = data.inventory_levels.filter(inv => inv.product_id === product.id);
+                const totalStock = inventory.reduce((sum, inv) => sum + inv.quantity_on_hand, 0);
+                const totalValue = totalStock * product.unit_price;
+                const status = totalStock < product.reorder_level ? '⚠️ Low' : totalStock === 0 ? '❌ Out' : '✅ OK';
+                const statusColor = totalStock < product.reorder_level ? '#ff9800' : totalStock === 0 ? '#d32f2f' : '#4caf50';
+
+                return {
+                    sku: product.sku,
+                    name: product.name,
+                    price: product.unit_price,
+                    stock: totalStock,
+                    reorder: product.reorder_level,
+                    value: totalValue,
+                    status: status,
+                    statusColor: statusColor
+                };
+            }).sort((a, b) => a.stock - b.stock); // Sort by lowest stock first
+
+            const tbody = document.getElementById('productsInventoryTableBody');
+            tbody.innerHTML = productStats.map(p => `
+                <tr style="border-bottom: 1px solid #eee; ${p.stock < p.reorder ? 'background: #fff5f5;' : ''}">
+                    <td style="padding: 12px; font-size: 12px; color: #666;">${p.sku}</td>
+                    <td style="padding: 12px; font-weight: 500;">${p.name}</td>
+                    <td style="padding: 12px; text-align: right;">TZS ${p.price.toLocaleString()}</td>
+                    <td style="padding: 12px; text-align: center; font-weight: bold; color: ${p.stock > 0 ? '#2D5016' : '#d32f2f'};">${p.stock}</td>
+                    <td style="padding: 12px; text-align: center;">${p.reorder}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold;">TZS ${p.value.toLocaleString()}</td>
+                    <td style="padding: 12px; text-align: center; color: ${p.statusColor}; font-weight: bold;">${p.status}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No products</td></tr>';
         }
 
         function updateWarehouseStockLevels() {

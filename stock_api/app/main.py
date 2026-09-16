@@ -108,14 +108,20 @@ def seed_database(db: Session = Depends(get_db)):
 
 @app.post("/migrate-db")
 def migrate_database(db: Session = Depends(get_db)):
-    """Migrate database schema - recreate stock_requests table with new fields"""
+    """Migrate database schema - add request_type column to stock_requests table"""
     try:
-        # Drop stock_requests table if it exists
-        db.execute(text("DROP TABLE IF EXISTS stock_requests CASCADE"))
+        # Try to add the request_type column if it doesn't exist
+        db.execute(text("ALTER TABLE stock_requests ADD COLUMN request_type VARCHAR DEFAULT 'request'"))
         db.commit()
-        # Recreate tables from models
-        models.StockRequest.__table__.create(engine, checkfirst=True)
-        db.commit()
-        return {"message": "Database migrated successfully"}
+        return {"message": "Database migrated successfully - request_type column added"}
     except Exception as e:
-        return {"message": f"Migration error: {str(e)}"}
+        # Column might already exist, try a different approach
+        try:
+            # Recreate the table with the new schema
+            db.execute(text("DROP TABLE IF EXISTS stock_requests CASCADE"))
+            db.commit()
+            models.StockRequest.__table__.create(engine)
+            db.commit()
+            return {"message": "Database migrated successfully - stock_requests table recreated"}
+        except Exception as e2:
+            return {"message": f"Migration note: {str(e)}"}

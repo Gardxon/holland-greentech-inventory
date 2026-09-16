@@ -398,15 +398,34 @@
 
                     <!-- Branch: Stock Requests -->
                     <div id="branch-requests" class="tab-content">
-                        <h2>Stock Requests</h2>
+                        <h2>Stock Requests & Returns</h2>
+                        <div id="notification" style="display:none; padding: 15px; margin-bottom: 20px; border-radius: 4px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724;"></div>
+
                         <form onsubmit="createStockRequest(event)" class="card">
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Request Type</label>
+                                    <select id="reqType" required>
+                                        <option value="request">Request Stock</option>
+                                        <option value="return">Return Stock</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>From Branch</label>
+                                    <input type="text" id="fromBranch" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Send to Warehouse</label>
+                                    <select id="toWarehouse" required></select>
+                                </div>
+                            </div>
                             <div class="flex">
                                 <div class="form-group">
                                     <label>Product</label>
                                     <select id="reqProduct" required></select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Quantity Needed</label>
+                                    <label>Quantity</label>
                                     <input type="number" id="reqQty" min="1" required>
                                 </div>
                             </div>
@@ -417,9 +436,9 @@
                             <button type="submit" class="btn btn-primary">Submit Request</button>
                         </form>
 
-                        <h3 style="margin-top: 30px;">My Stock Requests</h3>
+                        <h3 style="margin-top: 30px;">Stock Requests & Returns</h3>
                         <table id="requestsTable">
-                            <thead><tr><th>Product</th><th>Qty</th><th>Status</th><th>Requested</th></tr></thead>
+                            <thead><tr><th>Type</th><th>Product</th><th>From</th><th>To</th><th>Qty</th><th>Status</th><th>Requested</th></tr></thead>
                             <tbody></tbody>
                         </table>
                     </div>
@@ -542,7 +561,7 @@
     <script>
         const API_BASE = window.location.origin;
         let currentUser = null;
-        let data = { products: [], branches: [], sales: [], users: [], customers: [], inventory: {}, requests: [] };
+        let data = { products: [], branches: [], sales: [], users: [], customers: [], stock_requests: [], inventory: {}, requests: [] };
 
         // API calls
         async function api(endpoint, options = {}) {
@@ -649,12 +668,13 @@
 
         // Data functions
         async function loadData() {
-            const [products, branches, sales, users, customers] = await Promise.all([
+            const [products, branches, sales, users, customers, stock_requests] = await Promise.all([
                 api('/products'),
                 api('/branches'),
                 api('/sales'),
                 currentUser.is_admin ? api('/auth/members') : Promise.resolve([]),
-                api('/customers')
+                api('/customers'),
+                api('/stock-requests')
             ]);
 
             if (products) data.products = products;
@@ -662,6 +682,7 @@
             if (sales) data.sales = sales;
             if (users) data.users = users;
             if (customers) data.customers = customers;
+            if (stock_requests) data.stock_requests = stock_requests;
 
             updateDashboard();
             populateSelects();
@@ -751,6 +772,27 @@
                 `).join('');
                 document.querySelector('#customersTable tbody').innerHTML = customersHtml || '<tr><td colspan="5">No customers</td></tr>';
             }
+
+            // Stock Requests table
+            if (document.querySelector('#requestsTable tbody')) {
+                const requestsHtml = (data.stock_requests || []).map(r => {
+                    const product = data.products.find(p => p.id === r.product_id);
+                    const fromBranch = data.branches.find(b => b.id === r.from_branch_id);
+                    const toBranch = data.branches.find(b => b.id === r.to_branch_id);
+                    return `
+                        <tr>
+                            <td>${r.request_type === 'return' ? '↩️ Return' : '📦 Request'}</td>
+                            <td>${product?.name || 'Unknown'}</td>
+                            <td>${fromBranch?.name || 'Unknown'}</td>
+                            <td>${toBranch?.name || 'Unknown'}</td>
+                            <td>${r.quantity}</td>
+                            <td><span style="padding: 4px 8px; border-radius: 3px; background: ${r.status === 'fulfilled' ? '#d4edda' : r.status === 'rejected' ? '#f8d7da' : '#fff3cd'}; color: ${r.status === 'fulfilled' ? '#155724' : r.status === 'rejected' ? '#721c24' : '#856404'};">${r.status}</span></td>
+                            <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+                document.querySelector('#requestsTable tbody').innerHTML = requestsHtml || '<tr><td colspan="7">No requests</td></tr>';
+            }
         }
 
         function populateSelects() {
@@ -767,6 +809,26 @@
             document.getElementById('memberBranch').innerHTML = data.branches.map(b =>
                 `<option value="${b.id}">${b.name}</option>`
             ).join('');
+
+            // Warehouses select (Arusha and Morogoro)
+            const warehouses = data.branches.filter(b => b.branch_type === 'warehouse');
+            document.getElementById('toWarehouse').innerHTML = warehouses.map(w =>
+                `<option value="${w.id}">${w.name}</option>`
+            ).join('');
+
+            // Set from branch
+            const fromBranchName = data.branches.find(b => b.id === currentUser.branch_id)?.name || 'Unknown';
+            const fromBranchEl = document.getElementById('fromBranch');
+            if (fromBranchEl) fromBranchEl.value = fromBranchName;
+        }
+
+        function showNotification(message) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.style.display = 'block';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 5000);
         }
 
         // Actions
@@ -872,11 +934,18 @@
 
         async function createStockRequest(e) {
             e.preventDefault();
+            const requestType = document.getElementById('reqType').value;
+            const toWarehouseId = parseInt(document.getElementById('toWarehouse').value);
+            const quantity = parseInt(document.getElementById('reqQty').value);
+            const product = data.products.find(p => p.id === parseInt(document.getElementById('reqProduct').value));
+            const toWarehouse = data.branches.find(b => b.id === toWarehouseId);
+
             const request = {
                 product_id: parseInt(document.getElementById('reqProduct').value),
                 from_branch_id: currentUser.branch_id,
-                to_branch_id: currentUser.branch_id,
-                quantity: parseInt(document.getElementById('reqQty').value),
+                to_branch_id: toWarehouseId,
+                quantity: quantity,
+                request_type: requestType,
                 reason: document.getElementById('reqReason').value
             };
 
@@ -886,9 +955,13 @@
             });
 
             if (result) {
-                showAlert('Stock request submitted!', 'success');
+                const message = requestType === 'return' ?
+                    `✓ Return request submitted: ${quantity}x ${product.name} to ${toWarehouse.name}` :
+                    `✓ Stock request submitted: ${quantity}x ${product.name} to ${toWarehouse.name}`;
+                showNotification(message);
                 loadData();
                 e.target.reset();
+                populateSelects();
             }
         }
 

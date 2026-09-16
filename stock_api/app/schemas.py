@@ -117,6 +117,7 @@ class StockRequestBase(BaseModel):
     from_branch_id: int
     to_branch_id: int
     quantity: int
+    request_type: str = "request"  # "request" or "return"
     reason: Optional[str] = None
 
 class StockRequestCreate(StockRequestBase):

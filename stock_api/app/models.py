@@ -125,6 +125,7 @@ class StockRequest(Base):
     from_branch_id = Column(Integer, ForeignKey("branches.id"), index=True)
     to_branch_id = Column(Integer, ForeignKey("branches.id"), index=True)
     quantity = Column(Integer)
+    request_type = Column(String, default="request")  # "request" or "return"
     status = Column(String, default="pending")  # pending, approved, rejected, fulfilled
     reason = Column(Text, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"))

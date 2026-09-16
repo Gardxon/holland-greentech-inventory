@@ -9,11 +9,17 @@ router = APIRouter(prefix="/stock-requests", tags=["stock-requests"])
 @router.post("/", response_model=schemas.StockRequest)
 def create_stock_request(request: schemas.StockRequestCreate, user_id: int = Query(1),
                          db: Session = Depends(get_db)):
+    # Validate destination warehouse (must be Arusha or Morogoro)
+    to_branch = db.query(models.Branch).filter(models.Branch.id == request.to_branch_id).first()
+    if not to_branch or to_branch.branch_type != "warehouse":
+        raise HTTPException(status_code=400, detail="Stock requests can only be sent to warehouses (Arusha or Morogoro)")
+
     stock_req = models.StockRequest(
         product_id=request.product_id,
         from_branch_id=request.from_branch_id,
         to_branch_id=request.to_branch_id,
         quantity=request.quantity,
+        request_type=getattr(request, 'request_type', 'request'),
         reason=request.reason,
         created_by=user_id,
         status="pending"

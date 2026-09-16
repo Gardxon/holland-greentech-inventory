@@ -273,17 +273,17 @@
 
         @media (max-width: 768px) {
             header {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 10px;
-                align-items: flex-start;
+                align-items: center;
                 padding: 15px;
             }
-            header h1 { font-size: 18px; }
-            .user-info { text-align: left; font-size: 12px; }
+            header h1 { font-size: 18px; margin: 0 auto 0 0; }
+            .user-info { text-align: right; font-size: 12px; }
 
-            .hamburger { display: block; }
+            .hamburger { display: block; margin-right: 10px; }
 
-            .sidebar {
+            div[style*="display: flex"] > .sidebar {
                 position: fixed;
                 left: -100%;
                 top: 0;
@@ -299,7 +299,8 @@
                 padding-top: 60px;
             }
 
-            .sidebar.active { left: 0; }
+            .sidebar { position: fixed !important; left: -100% !important; }
+            .sidebar.active { left: 0 !important; }
             .sidebar-overlay.active { display: block; }
 
             .sidebar-menu button { font-size: 13px; padding: 10px; }

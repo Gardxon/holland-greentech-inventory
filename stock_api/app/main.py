@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
 from sqlalchemy.orm import Session
 from app.database import engine, Base, get_db
-from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports
+from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports, customers
 import app.models as models
 
 Base.metadata.create_all(bind=engine)
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(branches.router)
 app.include_router(products.router)
+app.include_router(customers.router)
 app.include_router(inventory.router)
 app.include_router(stock_movements.router)
 app.include_router(sales.router)

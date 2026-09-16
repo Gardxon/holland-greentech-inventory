@@ -315,11 +315,24 @@
                     <!-- Admin: Members -->
                     <div id="admin-members" class="tab-content">
                         <h2>Manage Members</h2>
-                        <button class="btn btn-primary" onclick="showModal('memberModal')">+ Add Member</button>
-                        <table id="membersTable">
-                            <thead><tr><th>Username</th><th>Branch</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
+                        <div class="flex" style="margin-bottom: 20px; gap: 10px;">
+                            <button class="btn btn-primary" onclick="showModal('memberModal')">+ Add Member</button>
+                            <button class="btn" onclick="toggleMembersView('table')" id="viewTableBtn" style="background: #3A6B4F; color: white;">📋 List View</button>
+                            <button class="btn" onclick="toggleMembersView('branch')" id="viewBranchBtn">🏢 By Branch</button>
+                        </div>
+
+                        <!-- List View -->
+                        <div id="membersListView">
+                            <table id="membersTable">
+                                <thead><tr><th>Username</th><th>Branch</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Branch View -->
+                        <div id="membersBranchView" style="display: none;">
+                            <div id="membersByBranchContainer"></div>
+                        </div>
                     </div>
 
                     <!-- Admin: Manage Admins -->
@@ -1026,6 +1039,77 @@
                     loadAdmins();
                 }
             }
+        }
+
+        function toggleMembersView(view) {
+            const tableView = document.getElementById('membersListView');
+            const branchView = document.getElementById('membersBranchView');
+            const tableBtn = document.getElementById('viewTableBtn');
+            const branchBtn = document.getElementById('viewBranchBtn');
+
+            if (view === 'table') {
+                tableView.style.display = 'block';
+                branchView.style.display = 'none';
+                tableBtn.style.background = '#3A6B4F';
+                tableBtn.style.color = 'white';
+                branchBtn.style.background = '';
+                branchBtn.style.color = '';
+            } else {
+                tableView.style.display = 'none';
+                branchView.style.display = 'block';
+                branchBtn.style.background = '#3A6B4F';
+                branchBtn.style.color = 'white';
+                tableBtn.style.background = '';
+                tableBtn.style.color = '';
+                renderMembersByBranch();
+            }
+        }
+
+        function renderMembersByBranch() {
+            const members = data.users || [];
+            const branches = data.branches || [];
+            const container = document.getElementById('membersByBranchContainer');
+
+            const branchMap = {};
+            branches.forEach(b => {
+                branchMap[b.id] = {name: b.name, members: []};
+            });
+
+            members.forEach(m => {
+                if (branchMap[m.branch_id]) {
+                    branchMap[m.branch_id].members.push(m);
+                }
+            });
+
+            let html = '';
+            Object.values(branchMap).forEach(branch => {
+                if (branch.members.length > 0) {
+                    html += `
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>🏢 ${branch.name} (${branch.members.length} member${branch.members.length !== 1 ? 's' : ''})</h3>
+                            <table style="width: 100%; margin-top: 10px;">
+                                <thead><tr><th>Username</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    ${branch.members.map(m => `
+                                        <tr>
+                                            <td>${m.username}</td>
+                                            <td>${m.is_admin ? 'Admin' : 'Staff'}</td>
+                                            <td>Active</td>
+                                            <td><button class="btn btn-sm btn-danger" onclick="deactivateMember(${m.id})">Deactivate</button></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+
+            if (html === '') {
+                html = '<p style="text-align: center; color: #666;">No members assigned to branches yet</p>';
+            }
+
+            container.innerHTML = html;
         }
 
         async function recordSale(e) {

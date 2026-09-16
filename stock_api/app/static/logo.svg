@@ -1,0 +1,60 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="white" stroke="#3A6B4F" stroke-width="2"/>
+
+  <!-- Africa outline -->
+  <g transform="translate(100, 85) scale(1.2)">
+    <path d="M -20,-25 L -15,-28 L -10,-26 L -5,-30 L 0,-28 L 5,-32 L 10,-29 L 15,-31 L 18,-27 L 20,-30 L 22,-25 L 20,-20 L 22,-15 L 20,-10 L 25,-5 L 23,0 L 25,8 L 20,12 L 22,18 L 18,20 L 15,25 L 10,22 L 8,28 L 2,25 L 0,30 L -5,28 L -8,32 L -15,28 L -18,22 L -20,25 L -22,15 L -25,18 L -24,10 L -28,8 L -26,2 L -30,-5 L -28,-12 L -25,-15 Z"
+          fill="none" stroke="#3A6B4F" stroke-width="1.5"/>
+  </g>
+
+  <!-- Leaf 1 (top right) -->
+  <g transform="translate(110, 65) rotate(-20)">
+    <ellipse cx="0" cy="0" rx="6" ry="12" fill="#3A6B4F"/>
+    <line x1="-3" y1="-8" x2="3" y2="8" stroke="#2D5016" stroke-width="1"/>
+    <line x1="-2" y1="-6" x2="1" y2="3" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="0" y1="-8" x2="-1" y2="5" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="2" y1="-7" x2="2" y2="6" stroke="#2D5016" stroke-width="0.5"/>
+  </g>
+
+  <!-- Leaf 2 (top center) -->
+  <g transform="translate(100, 58) rotate(0)">
+    <ellipse cx="0" cy="0" rx="6" ry="12" fill="#3A6B4F"/>
+    <line x1="-3" y1="-8" x2="3" y2="8" stroke="#2D5016" stroke-width="1"/>
+    <line x1="-2" y1="-6" x2="1" y2="3" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="0" y1="-8" x2="-1" y2="5" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="2" y1="-7" x2="2" y2="6" stroke="#2D5016" stroke-width="0.5"/>
+  </g>
+
+  <!-- Leaf 3 (top left) -->
+  <g transform="translate(90, 65) rotate(20)">
+    <ellipse cx="0" cy="0" rx="6" ry="12" fill="#3A6B4F"/>
+    <line x1="-3" y1="-8" x2="3" y2="8" stroke="#2D5016" stroke-width="1"/>
+    <line x1="-2" y1="-6" x2="1" y2="3" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="0" y1="-8" x2="-1" y2="5" stroke="#2D5016" stroke-width="0.5"/>
+    <line x1="2" y1="-7" x2="2" y2="6" stroke="#2D5016" stroke-width="0.5"/>
+  </g>
+
+  <!-- Leaf 4 (middle right) -->
+  <g transform="translate(115, 80) rotate(-35)">
+    <ellipse cx="0" cy="0" rx="5" ry="10" fill="#3A6B4F"/>
+    <line x1="-2.5" y1="-6" x2="2.5" y2="6" stroke="#2D5016" stroke-width="0.8"/>
+    <line x1="-1.5" y1="-5" x2="1" y2="3" stroke="#2D5016" stroke-width="0.4"/>
+    <line x1="0" y1="-6" x2="-0.5" y2="4" stroke="#2D5016" stroke-width="0.4"/>
+  </g>
+
+  <!-- Leaf 5 (middle left) -->
+  <g transform="translate(85, 80) rotate(35)">
+    <ellipse cx="0" cy="0" rx="5" ry="10" fill="#3A6B4F"/>
+    <line x1="-2.5" y1="-6" x2="2.5" y2="6" stroke="#2D5016" stroke-width="0.8"/>
+    <line x1="-1.5" y1="-5" x2="1" y2="3" stroke="#2D5016" stroke-width="0.4"/>
+    <line x1="0" y1="-6" x2="-0.5" y2="4" stroke="#2D5016" stroke-width="0.4"/>
+  </g>
+
+  <!-- Stem -->
+  <line x1="100" y1="105" x2="100" y2="135" stroke="#3A6B4F" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Text: HOLLAND GREENTECH -->
+  <text x="100" y="155" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#3A6B4F">HOLLAND</text>
+  <text x="100" y="168" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#3A6B4F">GREENTECH</text>
+</svg>

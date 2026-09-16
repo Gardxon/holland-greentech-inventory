@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.database import engine, Base, get_db
 from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports, customers
 import app.models as models
@@ -110,7 +111,7 @@ def migrate_database(db: Session = Depends(get_db)):
     """Migrate database schema - recreate stock_requests table with new fields"""
     try:
         # Drop stock_requests table if it exists
-        db.execute("DROP TABLE IF EXISTS stock_requests CASCADE")
+        db.execute(text("DROP TABLE IF EXISTS stock_requests CASCADE"))
         db.commit()
         # Recreate tables from models
         models.StockRequest.__table__.create(engine, checkfirst=True)

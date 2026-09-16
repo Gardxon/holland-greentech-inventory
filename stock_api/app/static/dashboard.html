@@ -321,6 +321,35 @@
                         </table>
                     </div>
 
+                    <!-- Admin: Manage Admins -->
+                    <div id="admin-admins" class="tab-content">
+                        <h2>Manage Admins</h2>
+                        <form onsubmit="createAdmin(event)" class="card">
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" id="adminUsername" placeholder="Enter admin username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>PIN Code</label>
+                                    <input type="password" id="adminPin" placeholder="4-digit PIN" maxlength="4" required>
+                                </div>
+                            </div>
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Branch</label>
+                                    <select id="adminBranch" required></select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">+ Create Admin Account</button>
+                        </form>
+                        <h3 style="margin-top: 30px;">Current Admins</h3>
+                        <table id="adminsTable">
+                            <thead><tr><th>Username</th><th>Branch</th><th>Created</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
                     <!-- Admin: Reports -->
                     <div id="admin-reports" class="tab-content">
                         <h2>Reports</h2>
@@ -629,6 +658,7 @@
             if (currentUser.is_admin) {
                 addMenuItem('➕ Add Products', 'admin-products', menu);
                 addMenuItem('👥 Manage Members', 'admin-members', menu);
+                addMenuItem('👮 Manage Admins', 'admin-admins', menu);
                 addMenuItem('📋 Reports', 'admin-reports', menu);
             } else {
                 addMenuItem('👤 Manage Customers', 'branch-customers', menu);
@@ -793,6 +823,11 @@
                 }).join('');
                 document.querySelector('#requestsTable tbody').innerHTML = requestsHtml || '<tr><td colspan="7">No requests</td></tr>';
             }
+
+            // Load admins if admin is viewing the admin-admins tab
+            if (document.getElementById('adminsTable')) {
+                loadAdmins();
+            }
         }
 
         function populateSelects() {
@@ -809,6 +844,13 @@
             document.getElementById('memberBranch').innerHTML = data.branches.map(b =>
                 `<option value="${b.id}">${b.name}</option>`
             ).join('');
+
+            // Admin Branches select
+            if (document.getElementById('adminBranch')) {
+                document.getElementById('adminBranch').innerHTML = data.branches.map(b =>
+                    `<option value="${b.id}">${b.name}</option>`
+                ).join('');
+            }
 
             // Warehouses select (Arusha and Morogoro)
             const warehouses = data.branches.filter(b => b.branch_type === 'warehouse');
@@ -874,6 +916,53 @@
                 closeModal('memberModal');
                 loadData();
                 e.target.reset();
+            }
+        }
+
+        async function createAdmin(e) {
+            e.preventDefault();
+            const admin = {
+                username: document.getElementById('adminUsername').value,
+                pin: document.getElementById('adminPin').value,
+                branch_id: parseInt(document.getElementById('adminBranch').value),
+                is_admin: true
+            };
+
+            const result = await api('/auth/members', {
+                method: 'POST',
+                body: JSON.stringify(admin)
+            });
+
+            if (result) {
+                showAlert('Admin account created!', 'success');
+                loadAdmins();
+                e.target.reset();
+            }
+        }
+
+        async function loadAdmins() {
+            const members = await api('/auth/members');
+            const admins = (members || []).filter(m => m.is_admin);
+            const tbody = document.querySelector('#adminsTable tbody');
+            tbody.innerHTML = admins.map(admin => `
+                <tr>
+                    <td><strong>${admin.username}</strong></td>
+                    <td>${admin.branch_name || 'N/A'}</td>
+                    <td>${new Date(admin.created_at).toLocaleDateString()}</td>
+                    <td>
+                        ${admin.id !== currentUser.id ? `<button class="btn btn-danger btn-sm" onclick="removeAdmin(${admin.id})">Remove</button>` : 'Current User'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function removeAdmin(userId) {
+            if (confirm('Remove admin access from this user?')) {
+                const result = await api(`/auth/members/${userId}`, {method: 'DELETE'});
+                if (result) {
+                    showAlert('Admin removed!', 'success');
+                    loadAdmins();
+                }
             }
         }
 

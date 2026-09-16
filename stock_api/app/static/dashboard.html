@@ -337,6 +337,19 @@
                         </div>
                     </div>
 
+                    <!-- Branch: Manage Customers -->
+                    <div id="branch-customers" class="tab-content">
+                        <h2>Manage Customers</h2>
+                        <button class="btn btn-primary" onclick="showModal('customerModal')">+ Add Customer</button>
+                        <div class="flex">
+                            <input type="text" id="customerSearch" placeholder="Search customers..." style="flex: 1;">
+                        </div>
+                        <table id="customersTable">
+                            <thead><tr><th>Name</th><th>Contact</th><th>Location</th><th>Type</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
                     <!-- Branch: Record Sales -->
                     <div id="branch-sales" class="tab-content">
                         <h2>Record Sales</h2>
@@ -492,10 +505,44 @@
         </div>
     </div>
 
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <h2>Add Customer</h2>
+            <form onsubmit="saveCustomer(event)">
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact (Phone/Email)</label>
+                    <input type="text" id="customerContact" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="customerLocation" required>
+                </div>
+                <div class="form-group">
+                    <label>Customer Type</label>
+                    <select id="customerType" required>
+                        <option value="">Select Type</option>
+                        <option value="Farmer">Farmer</option>
+                        <option value="Agrovet">Agrovet</option>
+                        <option value="Company">Company</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Save Customer</button>
+                    <button type="button" class="btn" onclick="closeModal('customerModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.origin;
         let currentUser = null;
-        let data = { products: [], branches: [], sales: [], users: [], inventory: {}, requests: [] };
+        let data = { products: [], branches: [], sales: [], users: [], customers: [], inventory: {}, requests: [] };
 
         // API calls
         async function api(endpoint, options = {}) {
@@ -565,6 +612,7 @@
                 addMenuItem('👥 Manage Members', 'admin-members', menu);
                 addMenuItem('📋 Reports', 'admin-reports', menu);
             } else {
+                addMenuItem('👤 Manage Customers', 'branch-customers', menu);
                 addMenuItem('💰 Record Sales', 'branch-sales', menu);
                 addMenuItem('📦 Stock Requests', 'branch-requests', menu);
                 addMenuItem('📊 My Reports', 'branch-reports', menu);
@@ -601,17 +649,19 @@
 
         // Data functions
         async function loadData() {
-            const [products, branches, sales, users] = await Promise.all([
+            const [products, branches, sales, users, customers] = await Promise.all([
                 api('/products'),
                 api('/branches'),
                 api('/sales'),
-                currentUser.is_admin ? api('/auth/members') : Promise.resolve([])
+                currentUser.is_admin ? api('/auth/members') : Promise.resolve([]),
+                api('/customers')
             ]);
 
             if (products) data.products = products;
             if (branches) data.branches = branches;
             if (sales) data.sales = sales;
             if (users) data.users = users;
+            if (customers) data.customers = customers;
 
             updateDashboard();
             populateSelects();
@@ -687,6 +737,20 @@
                 </tr>
             `).join('');
             document.querySelector('#membersTable tbody').innerHTML = membersHtml || '<tr><td colspan="5">No members</td></tr>';
+
+            // Customers table
+            if (document.querySelector('#customersTable tbody')) {
+                const customersHtml = data.customers.map(c => `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.contact}</td>
+                        <td>${c.location}</td>
+                        <td>${c.category}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteCustomer(${c.id})">Delete</button></td>
+                    </tr>
+                `).join('');
+                document.querySelector('#customersTable tbody').innerHTML = customersHtml || '<tr><td colspan="5">No customers</td></tr>';
+            }
         }
 
         function populateSelects() {
@@ -771,6 +835,38 @@
                 showAlert('Sale recorded!', 'success');
                 loadData();
                 e.target.reset();
+            }
+        }
+
+        async function saveCustomer(e) {
+            e.preventDefault();
+            const customer = {
+                name: document.getElementById('customerName').value,
+                contact: document.getElementById('customerContact').value,
+                location: document.getElementById('customerLocation').value,
+                category: document.getElementById('customerType').value
+            };
+
+            const result = await api('/customers', {
+                method: 'POST',
+                body: JSON.stringify(customer)
+            });
+
+            if (result) {
+                showAlert('Customer added!', 'success');
+                closeModal('customerModal');
+                loadData();
+                e.target.reset();
+            }
+        }
+
+        async function deleteCustomer(id) {
+            if (confirm('Delete this customer?')) {
+                const result = await api(`/customers/${id}`, { method: 'DELETE' });
+                if (result) {
+                    showAlert('Customer deleted!', 'success');
+                    loadData();
+                }
             }
         }
 

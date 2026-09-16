@@ -782,13 +782,16 @@
                     ...options
                 });
                 if (!response.ok) {
-                    if (response.status === 401) logout();
+                    if (response.status === 401) {
+                        logout();
+                        return null;
+                    }
+                    console.error(`API error: ${response.status} on ${endpoint}`);
                     throw new Error(`API error: ${response.status}`);
                 }
                 return await response.json();
             } catch (err) {
-                showAlert(`Error: ${err.message}`, 'error');
-                console.error(err);
+                console.error(`Fetch error on ${endpoint}:`, err.message);
                 return null;
             }
         }
@@ -799,18 +802,25 @@
             const username = document.getElementById('loginUsername').value;
             const pin = document.getElementById('loginPin').value;
 
-            const result = await api('/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ username, pin })
-            });
+            try {
+                const result = await api('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, pin })
+                });
 
-            if (result) {
-                currentUser = result;
-                sessionStorage.setItem('user', JSON.stringify(result));
-                showApp();
-                loadData();
-            } else {
-                document.getElementById('loginError').textContent = 'Invalid credentials';
+                if (result && result.id && result.username) {
+                    currentUser = result;
+                    sessionStorage.setItem('user', JSON.stringify(result));
+                    showApp();
+                    loadData();
+                } else {
+                    console.error('Login response invalid:', result);
+                    document.getElementById('loginError').textContent = 'Invalid credentials';
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                document.getElementById('loginError').textContent = 'Login failed. Please try again.';
                 document.getElementById('loginError').style.display = 'block';
             }
         }
@@ -874,6 +884,10 @@
         }
 
         function setupSidebar() {
+            if (!currentUser) {
+                console.error('User not logged in for sidebar setup');
+                return;
+            }
             const menu = document.getElementById('sidebarMenu');
             menu.innerHTML = '';
 
@@ -929,6 +943,10 @@
 
         // Data functions
         async function loadData() {
+            if (!currentUser) {
+                console.error('User not logged in');
+                return;
+            }
             const [products, branches, sales, users, customers, stock_requests] = await Promise.all([
                 api('/products'),
                 api('/branches'),

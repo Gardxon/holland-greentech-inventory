@@ -277,6 +277,7 @@
             <div class="user-info">
                 <div>Logged in as: <strong id="currentUser"></strong></div>
                 <div id="userRole"></div>
+                <button class="logout-btn" onclick="showModal('changePinModal')" style="margin-right: 10px; background: #4a7c6b;">🔒 Change PIN</button>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </header>
@@ -587,6 +588,31 @@
         </div>
     </div>
 
+    <!-- Change PIN Modal -->
+    <div id="changePinModal" class="modal">
+        <div class="modal-content">
+            <h2>🔒 Change PIN Code</h2>
+            <form onsubmit="changePin(event)">
+                <div class="form-group">
+                    <label>Current PIN</label>
+                    <input type="password" id="currentPin" maxlength="4" placeholder="4-digit PIN" required>
+                </div>
+                <div class="form-group">
+                    <label>New PIN</label>
+                    <input type="password" id="newPin" maxlength="4" placeholder="4-digit PIN" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New PIN</label>
+                    <input type="password" id="confirmPin" maxlength="4" placeholder="4-digit PIN" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Change PIN</button>
+                    <button type="button" class="btn" onclick="closeModal('changePinModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.origin;
         let currentUser = null;
@@ -637,6 +663,42 @@
             sessionStorage.removeItem('user');
             currentUser = null;
             location.reload();
+        }
+
+        async function changePin(e) {
+            e.preventDefault();
+            const currentPin = document.getElementById('currentPin').value;
+            const newPin = document.getElementById('newPin').value;
+            const confirmPin = document.getElementById('confirmPin').value;
+
+            if (newPin !== confirmPin) {
+                showAlert('New PIN and confirmation do not match!', 'error');
+                return;
+            }
+
+            if (newPin.length !== 4 || !/^\d+$/.test(newPin)) {
+                showAlert('PIN must be exactly 4 digits!', 'error');
+                return;
+            }
+
+            if (currentPin !== currentUser.pin_stored) {
+                const result = await api(`/auth/members/${currentUser.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        pin: newPin,
+                        branch_id: currentUser.branch_id,
+                        is_admin: currentUser.is_admin
+                    })
+                });
+
+                if (result) {
+                    showAlert('PIN changed successfully! Please log in with your new PIN.', 'success');
+                    closeModal('changePinModal');
+                    e.target.reset();
+                    setTimeout(() => logout(), 2000);
+                }
+            }
         }
 
         // UI functions

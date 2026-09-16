@@ -104,3 +104,17 @@ def seed_database(db: Session = Depends(get_db)):
         "branches": len(all_branches),
         "products": len(demo_products)
     }
+
+@app.post("/migrate-db")
+def migrate_database(db: Session = Depends(get_db)):
+    """Migrate database schema - recreate stock_requests table with new fields"""
+    try:
+        # Drop stock_requests table if it exists
+        db.execute("DROP TABLE IF EXISTS stock_requests CASCADE")
+        db.commit()
+        # Recreate tables from models
+        models.StockRequest.__table__.create(engine, checkfirst=True)
+        db.commit()
+        return {"message": "Database migrated successfully"}
+    except Exception as e:
+        return {"message": f"Migration error: {str(e)}"}

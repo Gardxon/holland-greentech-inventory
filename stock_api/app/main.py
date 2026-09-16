@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
@@ -9,7 +9,12 @@ from app.database import engine, Base, get_db
 from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports, customers
 import app.models as models
 
-Base.metadata.create_all(bind=engine)
+# Try to create tables on startup, but don't crash if database is unreachable
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Warning: Could not create tables on startup: {str(e)}")
+    print("Tables will be created when /migrate-db endpoint is called")
 
 app = FastAPI(
     title="Stock Management API",

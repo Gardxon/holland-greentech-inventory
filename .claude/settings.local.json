@@ -125,7 +125,13 @@
       "Bash(git commit -m 'Add low stock alerts and products inventory status to admin dashboard *)",
       "Bash(git commit -m 'Add Holland Greentech SVG logo to dashboard *)",
       "Bash(git commit -m 'Add Finance section with metrics and report download functionality *)",
-      "Read(//c/Users/User/Desktop/**)"
+      "Read(//c/Users/User/Desktop/**)",
+      "Bash(curl -X POST -F \"file=@products_with_sku.csv\" \"https://holland-greentech-inventory.onrender.com/products/bulk-import\")",
+      "Bash(curl -X POST -F \"file=@products_final_import.csv\" \"https://holland-greentech-inventory.onrender.com/products/bulk-import\")",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=1000\")",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=10\")",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=200&skip=0\")",
+      "Bash(python -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(f'Total products: {len\\(data\\)}'\\); print\\('First 5:'\\); [print\\(f\\\\\" {p['sku']} - {p['name']}\\\\\"\\) for p in data[:5]]\")"
     ]
   }
 }

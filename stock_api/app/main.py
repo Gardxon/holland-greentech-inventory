@@ -94,6 +94,18 @@ def seed_database(db: Session = Depends(get_db)):
 
     db.commit()
 
+    # Create default admin user
+    admin_user = models.User(
+        username="admin",
+        email="admin@hgt.local",
+        hashed_password="1234",  # PIN: 1234
+        branch_id=warehouses[0].id,  # Arusha warehouse
+        is_admin=True,
+        is_active=True
+    )
+    db.add(admin_user)
+    db.commit()
+
     demo_products = [
         models.Product(sku="PROD001", name="Product 1", description="Demo Product 1", unit_price=10.00),
         models.Product(sku="PROD002", name="Product 2", description="Demo Product 2", unit_price=20.00),

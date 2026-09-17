@@ -679,6 +679,24 @@
                         </div>
                     </div>
 
+                    <!-- Admin: Database Backups -->
+                    <div id="admin-backups" class="tab-content">
+                        <h2>🔒 Database Backups</h2>
+                        <div class="card">
+                            <h3>Create Backup</h3>
+                            <p style="margin-bottom: 15px;">Create a manual backup of your database. Automated backups run daily at 2 AM UTC.</p>
+                            <button class="btn btn-primary" onclick="createBackup()">💾 Create Backup Now</button>
+                            <div id="backupStatus" style="margin-top: 15px; display: none; padding: 10px; border-radius: 4px;"></div>
+                        </div>
+                        <div class="card" style="margin-top: 20px;">
+                            <h3>Backup History</h3>
+                            <table id="backupsTable">
+                                <thead><tr><th>Backup File</th><th>Size</th><th>Created</th><th>Actions</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <!-- Branch: Manage Customers -->
                     <div id="branch-customers" class="tab-content">
                         <h2>Manage Customers</h2>
@@ -1055,6 +1073,7 @@
                 addMenuItem('👥 Manage Members', 'admin-members', menu);
                 addMenuItem('👮 Manage Admins', 'admin-admins', menu);
                 addMenuItem('📋 Reports', 'admin-reports', menu);
+                addMenuItem('🔒 Backups', 'admin-backups', menu);
             } else {
                 addMenuItem('👤 Manage Customers', 'branch-customers', menu);
                 addMenuItem('💰 Record Sales', 'branch-sales', menu);
@@ -1936,8 +1955,72 @@
             loadData();
         }
 
+        // Backup functions
+        async function createBackup() {
+            const statusDiv = document.getElementById('backupStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = '⏳ Creating backup...';
+            statusDiv.style.background = '#e7f3ff';
+            statusDiv.style.color = '#004085';
+
+            try {
+                const response = await fetch('/backup-db', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    statusDiv.textContent = `✅ Backup created: ${data.backup_file} (${new Date(data.timestamp).toLocaleString()})`;
+                    statusDiv.style.background = '#d4edda';
+                    statusDiv.style.color = '#155724';
+                    loadBackups();
+                } else {
+                    statusDiv.textContent = `❌ Error: ${data.message}`;
+                    statusDiv.style.background = '#f8d7da';
+                    statusDiv.style.color = '#721c24';
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+                statusDiv.style.background = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+            }
+        }
+
+        async function loadBackups() {
+            try {
+                const response = await fetch('/list-backups');
+                const data = await response.json();
+                const tbody = document.getElementById('backupsTable').querySelector('tbody');
+                tbody.innerHTML = '';
+
+                if (data.backups.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No backups yet</td></tr>';
+                    return;
+                }
+
+                data.backups.forEach(backup => {
+                    const row = `
+                        <tr>
+                            <td>${backup.filename}</td>
+                            <td>${backup.size_mb} MB</td>
+                            <td>${new Date(backup.created).toLocaleString()}</td>
+                            <td>
+                                <a href="/download-backup/${backup.filename}" class="btn btn-small" style="text-decoration: none; padding: 5px 10px; font-size: 12px;">📥 Download</a>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error loading backups:', error);
+            }
+        }
+
         // Auto-refresh
         setInterval(loadData, 30000);
+
+        // Load backups when page loads
+        if (currentUser && currentUser.is_admin) {
+            loadBackups();
+        }
     </script>
 </body>
 </html>

@@ -131,7 +131,25 @@
       "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=1000\")",
       "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=10\")",
       "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/?limit=200&skip=0\")",
-      "Bash(python -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(f'Total products: {len\\(data\\)}'\\); print\\('First 5:'\\); [print\\(f\\\\\" {p['sku']} - {p['name']}\\\\\"\\) for p in data[:5]]\")"
+      "Bash(python -c \"import sys, json; data = json.load\\(sys.stdin\\); print\\(f'Total products: {len\\(data\\)}'\\); print\\('First 5:'\\); [print\\(f\\\\\" {p['sku']} - {p['name']}\\\\\"\\) for p in data[:5]]\")",
+      "Bash(curl -X POST \"https://holland-greentech-inventory.onrender.com/migrate-db\")",
+      "WebSearch",
+      "WebFetch(domain:supabase.com)",
+      "Bash(cat)",
+      "Bash(python /tmp/test_supabase.py)",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/health\")",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/products/\")",
+      "Bash(curl -X POST \"https://holland-greentech-inventory.onrender.com/products/\" -F \"file=@C:\\\\Users\\\\User\\\\Desktop\\\\products_final_import.csv\")",
+      "Bash(curl -s -X POST \"https://holland-greentech-inventory.onrender.com/products/bulk-import\" -F \"file=@C:/Users/User/Desktop/products_final_import.csv\")",
+      "Bash(ls -la \"C:/Users/User/Desktop/products_final_import.csv\" 2>&1 | head -5)",
+      "Bash(curl -s -X POST \"https://holland-greentech-inventory.onrender.com/products/bulk-import\" -F \"file=@'C:\\\\Users\\\\User\\\\Desktop\\\\INVETORY FILE AND SALES\\\\products_final_import.csv'\")",
+      "Bash(curl -s -X POST \"https://holland-greentech-inventory.onrender.com/products/bulk-import\" -F \"file=@-\")",
+      "Bash(curl -s \"https://holland-greentech-inventory.onrender.com/\")",
+      "Bash(curl -s -X POST \"https://holland-greentech-inventory.onrender.com/seed-data\")",
+      "Bash(curl -s -X POST https://holland-greentech-inventory.onrender.com/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"pin\":\"admin\"}')",
+      "Bash(curl -s -X POST https://holland-greentech-inventory.onrender.com/auth/login -H 'Content-Type: application/json' -d '{\"username\":\"admin\",\"pin\":\"0000\"}')",
+      "Bash(curl -s -X POST https://holland-greentech-inventory.onrender.com/members -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(curl -s -X POST https://holland-greentech-inventory.onrender.com/products/bulk-import -F \"file=@-\")"
     ]
   }
 }

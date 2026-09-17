@@ -8,6 +8,9 @@ from sqlalchemy import text
 from app.database import engine, Base, get_db
 from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports, customers
 import app.models as models
+import shutil
+from datetime import datetime
+import os
 
 # Try to create tables on startup, but don't crash if database is unreachable
 try:
@@ -65,8 +68,67 @@ if dist_dir.exists():
 
 @app.get("/health")
 def health_check():
-    # Deployment v2
     return {"status": "healthy"}
+
+@app.post("/backup-db")
+def backup_database():
+    """Create a backup of the SQLite database"""
+    try:
+        backup_dir = Path("./backups")
+        backup_dir.mkdir(exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = backup_dir / f"stock_system_{timestamp}.db"
+
+        db_file = Path("./stock_system.db")
+        if db_file.exists():
+            shutil.copy2(db_file, backup_file)
+
+            # Keep only last 7 backups
+            backups = sorted(backup_dir.glob("stock_system_*.db"))
+            if len(backups) > 7:
+                for old_backup in backups[:-7]:
+                    old_backup.unlink()
+
+            return {
+                "status": "success",
+                "backup_file": str(backup_file),
+                "timestamp": timestamp,
+                "total_backups": len(sorted(backup_dir.glob("stock_system_*.db")))
+            }
+        else:
+            return {"status": "error", "message": "Database file not found"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/download-backup/{filename}")
+def download_backup(filename: str):
+    """Download a backup file"""
+    backup_dir = Path("./backups")
+    backup_file = backup_dir / filename
+
+    if not backup_file.exists() or not filename.endswith(".db"):
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    return FileResponse(backup_file, filename=filename)
+
+@app.get("/list-backups")
+def list_backups():
+    """List all available backups"""
+    backup_dir = Path("./backups")
+    if not backup_dir.exists():
+        return {"backups": []}
+
+    backups = []
+    for backup_file in sorted(backup_dir.glob("stock_system_*.db"), reverse=True):
+        size_mb = backup_file.stat().st_size / (1024 * 1024)
+        backups.append({
+            "filename": backup_file.name,
+            "size_mb": round(size_mb, 2),
+            "created": datetime.fromtimestamp(backup_file.stat().st_mtime).isoformat()
+        })
+
+    return {"backups": backups}
 
 @app.post("/seed-data")
 def seed_database(db: Session = Depends(get_db)):

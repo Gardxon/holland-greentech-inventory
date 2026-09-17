@@ -1,0 +1,20 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC (9 AM EAT/Tanzania)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger database backup
+        run: |
+          curl -X POST https://holland-greentech-inventory.onrender.com/backup-db
+          echo "Backup triggered successfully"
+
+      - name: List backups
+        run: |
+          curl https://holland-greentech-inventory.onrender.com/list-backups | jq

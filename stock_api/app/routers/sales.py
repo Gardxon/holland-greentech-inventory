@@ -17,6 +17,9 @@ def create_sale(sale: schemas.SalesCreate, user_id: int = Query(1), db: Session 
     if not inventory or inventory.quantity_on_hand < sale.quantity_sold:
         raise HTTPException(status_code=400, detail="Insufficient inventory")
 
+    product = db.query(models.Product).filter(models.Product.id == sale.product_id).first()
+    unit_price = sale.unit_price if sale.unit_price is not None else (product.unit_price if product else 0)
+
     inventory.quantity_on_hand -= sale.quantity_sold
 
     sale_record = models.Sales(
@@ -24,8 +27,8 @@ def create_sale(sale: schemas.SalesCreate, user_id: int = Query(1), db: Session 
         branch_id=sale.branch_id,
         customer_id=sale.customer_id,
         quantity_sold=sale.quantity_sold,
-        unit_price=sale.unit_price,
-        total_amount=sale.quantity_sold * sale.unit_price,
+        unit_price=unit_price,
+        total_amount=sale.quantity_sold * unit_price,
         payment_method=sale.payment_method,
         currency=sale.currency,
         notes=sale.notes,

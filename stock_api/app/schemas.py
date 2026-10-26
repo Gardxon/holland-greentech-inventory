@@ -101,7 +101,7 @@ class SalesBase(BaseModel):
     notes: Optional[str] = None
 
 class SalesCreate(SalesBase):
-    pass
+    unit_price: Optional[float] = None
 
 class Sales(SalesBase):
     id: int

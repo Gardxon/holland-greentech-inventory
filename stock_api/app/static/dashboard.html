@@ -1576,8 +1576,9 @@
         function populateSelects() {
             // Products select
             document.getElementById('saleProduct').innerHTML = data.products.map(p =>
-                `<option value="${p.id}">${p.name} (${p.sku})</option>`
+                `<option value="${p.id}" data-price="${p.unit_price}">${p.name} (${p.sku})</option>`
             ).join('');
+            fillSalePrice();
 
             document.getElementById('reqProduct').innerHTML = data.products.map(p =>
                 `<option value="${p.id}">${p.name}</option>`
@@ -1825,6 +1826,12 @@
 
             container.innerHTML = html;
         }
+
+        function fillSalePrice() {
+            const option = document.getElementById('saleProduct').selectedOptions[0];
+            if (option) document.getElementById('salePrice').value = option.dataset.price;
+        }
+        document.getElementById('saleProduct').addEventListener('change', fillSalePrice);
 
         async function recordSale(e) {
             e.preventDefault();

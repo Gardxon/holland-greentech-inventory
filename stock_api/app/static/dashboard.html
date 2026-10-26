@@ -1497,10 +1497,10 @@
             tbody.innerHTML = data.sales.slice(-10).reverse().map(s => `
                 <tr>
                     <td>${new Date(s.created_at).toLocaleDateString()}</td>
-                    <td>${s.product.name}</td>
+                    <td>${data.products.find(p => p.id === s.product_id)?.name || `#${s.product_id}`}</td>
                     <td>${s.quantity_sold}</td>
                     <td>TZS ${(s.quantity_sold * s.unit_price).toLocaleString()}</td>
-                    <td>${s.branch.name}</td>
+                    <td>${data.branches.find(b => b.id === s.branch_id)?.name || 'Unknown'}</td>
                 </tr>
             `).join('');
         }

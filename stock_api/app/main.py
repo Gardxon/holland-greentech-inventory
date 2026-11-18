@@ -5,16 +5,79 @@ from fastapi.responses import HTMLResponse, FileResponse
 from pathlib import Path
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.database import engine, Base, get_db
+import csv
+from app.database import engine, Base, get_db, SessionLocal
 from app.routers import products, branches, inventory, stock_movements, sales, stock_requests, dashboard, admin, auth, reports, customers
+from app.routers.products import import_product_rows
 import app.models as models
 import shutil
 from datetime import datetime
 import os
 
+PRODUCTS_CSV = Path(__file__).parent.parent / "products_final_import.csv"
+
+def seed_initial_data(db: Session):
+    if db.query(models.Branch).count() > 0:
+        return {"message": "Database already seeded"}
+
+    warehouses = [
+        models.Branch(name="Arusha", location="Arusha - Head Office", branch_type="warehouse"),
+        models.Branch(name="Morogoro", location="Morogoro", branch_type="warehouse"),
+    ]
+
+    branches_list = [
+        models.Branch(name="Dar es Salaam", location="Dar es Salaam", branch_type="sub_branch"),
+        models.Branch(name="Dodoma", location="Dodoma", branch_type="sub_branch"),
+        models.Branch(name="Iringa", location="Iringa", branch_type="sub_branch"),
+        models.Branch(name="Manyara", location="Manyara", branch_type="sub_branch"),
+    ]
+
+    all_branches = warehouses + branches_list
+    for branch in all_branches:
+        db.add(branch)
+    db.commit()
+
+    db.add(models.User(
+        username="admin",
+        email="admin@hgt.local",
+        hashed_password="1234",
+        branch_id=warehouses[0].id,
+        is_admin=True,
+        is_active=True
+    ))
+    db.commit()
+
+    demo_products = [
+        models.Product(sku="PROD001", name="Product 1", description="Demo Product 1", unit_price=10.00),
+        models.Product(sku="PROD002", name="Product 2", description="Demo Product 2", unit_price=20.00),
+        models.Product(sku="PROD003", name="Product 3", description="Demo Product 3", unit_price=15.00),
+    ]
+    for product in demo_products:
+        db.add(product)
+    db.commit()
+
+    return {
+        "message": "Database seeded successfully",
+        "branches": len(all_branches),
+        "products": len(demo_products)
+    }
+
+def bootstrap_database():
+    db = SessionLocal()
+    try:
+        products_empty = db.query(models.Product).count() == 0
+        seed_initial_data(db)
+        if products_empty and PRODUCTS_CSV.exists():
+            with open(PRODUCTS_CSV, newline="", encoding="utf-8") as f:
+                result = import_product_rows(csv.DictReader(f), db)
+            print(f"Imported products on startup: {result['imported']}")
+    finally:
+        db.close()
+
 # Try to create tables on startup, but don't crash if database is unreachable
 try:
     Base.metadata.create_all(bind=engine)
+    bootstrap_database()
 except Exception as e:
     print(f"Warning: Could not create tables on startup: {str(e)}")
     print("Tables will be created when /migrate-db endpoint is called")
@@ -133,57 +196,7 @@ def list_backups():
 @app.post("/seed-data")
 def seed_database(db: Session = Depends(get_db)):
     """Seed database with initial branches and demo data"""
-
-    existing_branches = db.query(models.Branch).count()
-    if existing_branches > 0:
-        return {"message": "Database already seeded"}
-
-    warehouses = [
-        models.Branch(name="Arusha", location="Arusha - Head Office", branch_type="warehouse"),
-        models.Branch(name="Morogoro", location="Morogoro", branch_type="warehouse"),
-    ]
-
-    branches_list = [
-        models.Branch(name="Dar es Salaam", location="Dar es Salaam", branch_type="sub_branch"),
-        models.Branch(name="Dodoma", location="Dodoma", branch_type="sub_branch"),
-        models.Branch(name="Iringa", location="Iringa", branch_type="sub_branch"),
-        models.Branch(name="Manyara", location="Manyara", branch_type="sub_branch"),
-    ]
-
-    all_branches = warehouses + branches_list
-    for branch in all_branches:
-        db.add(branch)
-
-    db.commit()
-
-    # Create default admin user
-    admin_user = models.User(
-        username="admin",
-        email="admin@hgt.local",
-        hashed_password="1234",  # PIN: 1234
-        branch_id=warehouses[0].id,  # Arusha warehouse
-        is_admin=True,
-        is_active=True
-    )
-    db.add(admin_user)
-    db.commit()
-
-    demo_products = [
-        models.Product(sku="PROD001", name="Product 1", description="Demo Product 1", unit_price=10.00),
-        models.Product(sku="PROD002", name="Product 2", description="Demo Product 2", unit_price=20.00),
-        models.Product(sku="PROD003", name="Product 3", description="Demo Product 3", unit_price=15.00),
-    ]
-
-    for product in demo_products:
-        db.add(product)
-
-    db.commit()
-
-    return {
-        "message": "Database seeded successfully",
-        "branches": len(all_branches),
-        "products": len(demo_products)
-    }
+    return seed_initial_data(db)
 
 @app.post("/migrate-db")
 def migrate_database(db: Session = Depends(get_db)):

@@ -29,6 +29,7 @@ class MemberCreate(BaseModel):
     pin: str
     branch_id: int
     is_admin: bool = False
+    is_active: bool | None = None
 
 @router.post("/login", response_model=UserResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
@@ -141,6 +142,8 @@ def update_member(user_id: int, member: MemberCreate, db: Session = Depends(get_
     user.hashed_password = member.pin
     user.branch_id = member.branch_id
     user.is_admin = member.is_admin
+    if member.is_active is not None:
+        user.is_active = member.is_active
 
     db.commit()
     db.refresh(user)

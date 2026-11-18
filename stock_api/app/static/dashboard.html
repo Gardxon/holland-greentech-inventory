@@ -730,6 +730,10 @@
                                     <input type="number" id="salePrice" step="0.01" required>
                                 </div>
                                 <div class="form-group">
+                                    <label>Total Amount (TSH)</label>
+                                    <input type="text" id="saleTotal" readonly>
+                                </div>
+                                <div class="form-group">
                                     <label>Payment Method</label>
                                     <select id="salePayment">
                                         <option value="cash">Cash</option>
@@ -1830,8 +1834,16 @@
         function fillSalePrice() {
             const option = document.getElementById('saleProduct').selectedOptions[0];
             if (option) document.getElementById('salePrice').value = option.dataset.price;
+            updateSaleTotal();
+        }
+        function updateSaleTotal() {
+            const qty = parseFloat(document.getElementById('saleQty').value) || 0;
+            const price = parseFloat(document.getElementById('salePrice').value) || 0;
+            document.getElementById('saleTotal').value = (qty * price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
         document.getElementById('saleProduct').addEventListener('change', fillSalePrice);
+        document.getElementById('saleQty').addEventListener('input', updateSaleTotal);
+        document.getElementById('salePrice').addEventListener('input', updateSaleTotal);
 
         async function recordSale(e) {
             e.preventDefault();

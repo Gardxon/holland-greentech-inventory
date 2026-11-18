@@ -769,9 +769,29 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>Customer Name (Optional)</label>
-                                <input type="text" id="saleCustomer">
+                            <div class="flex">
+                                <div class="form-group">
+                                    <label>Customer Name</label>
+                                    <input type="text" id="saleCustomer" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact (Phone/Email)</label>
+                                    <input type="text" id="saleContact" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    <input type="text" id="saleLocation" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Customer Type</label>
+                                    <select id="saleCategory" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Farmer">Farmer</option>
+                                        <option value="Company">Company</option>
+                                        <option value="NGO">NGO</option>
+                                        <option value="Agrovet">Agrovet</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Notes</label>
@@ -938,7 +958,7 @@
                         <option value="Farmer">Farmer</option>
                         <option value="Agrovet">Agrovet</option>
                         <option value="Company">Company</option>
-                        <option value="Other">Other</option>
+                        <option value="NGO">NGO</option>
                     </select>
                 </div>
                 <div class="modal-buttons">
@@ -1915,6 +1935,10 @@
                 quantity_sold: parseInt(document.getElementById('saleQty').value),
                 unit_price: parseFloat(document.getElementById('salePrice').value),
                 payment_method: document.getElementById('salePayment').value,
+                customer_name: document.getElementById('saleCustomer').value,
+                customer_contact: document.getElementById('saleContact').value,
+                customer_location: document.getElementById('saleLocation').value,
+                customer_category: document.getElementById('saleCategory').value,
                 notes: document.getElementById('saleNotes').value
             };
 

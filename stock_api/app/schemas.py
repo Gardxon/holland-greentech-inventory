@@ -102,6 +102,10 @@ class SalesBase(BaseModel):
 
 class SalesCreate(SalesBase):
     unit_price: Optional[float] = None
+    customer_name: str
+    customer_contact: str
+    customer_location: str
+    customer_category: str
 
 class Sales(SalesBase):
     id: int

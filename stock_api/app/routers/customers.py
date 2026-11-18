@@ -17,7 +17,7 @@ class CustomerResponse(BaseModel):
     id: int
     name: str
     contact: str
-    location: str
+    location: str | None = None
     category: str
     is_active: bool
     created_at: datetime

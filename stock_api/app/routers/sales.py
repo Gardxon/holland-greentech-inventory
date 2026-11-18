@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
@@ -20,12 +21,31 @@ def create_sale(sale: schemas.SalesCreate, user_id: int = Query(1), db: Session 
     product = db.query(models.Product).filter(models.Product.id == sale.product_id).first()
     unit_price = sale.unit_price if sale.unit_price is not None else (product.unit_price if product else 0)
 
+    customer = db.query(models.Customer).filter(
+        func.lower(models.Customer.name) == sale.customer_name.strip().lower(),
+        models.Customer.contact == sale.customer_contact.strip()
+    ).first()
+    if customer:
+        customer.category = sale.customer_category
+        customer.location = sale.customer_location.strip()
+        customer.is_active = True
+    else:
+        customer = models.Customer(
+            name=sale.customer_name.strip(),
+            contact=sale.customer_contact.strip(),
+            location=sale.customer_location.strip(),
+            category=sale.customer_category,
+            is_active=True
+        )
+        db.add(customer)
+        db.flush()
+
     inventory.quantity_on_hand -= sale.quantity_sold
 
     sale_record = models.Sales(
         product_id=sale.product_id,
         branch_id=sale.branch_id,
-        customer_id=sale.customer_id,
+        customer_id=customer.id,
         quantity_sold=sale.quantity_sold,
         unit_price=unit_price,
         total_amount=sale.quantity_sold * unit_price,

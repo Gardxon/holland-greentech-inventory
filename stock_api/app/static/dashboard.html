@@ -605,6 +605,32 @@
                             <div id="bulkImportStatus" style="margin-top: 15px;"></div>
                         </div>
 
+                        <div class="card" style="margin-bottom: 20px;">
+                            <h3>Add Stock to a Branch</h3>
+                            <form onsubmit="addStock(event)" class="flex">
+                                <div class="form-group">
+                                    <label>Branch</label>
+                                    <select id="stockBranch" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Product</label>
+                                    <select id="stockProduct" required></select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantity</label>
+                                    <input type="number" id="stockQty" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Reason (optional)</label>
+                                    <input type="text" id="stockReason" placeholder="e.g. Delivery from supplier">
+                                </div>
+                                <div class="form-group" style="align-self: flex-end;">
+                                    <button type="submit" class="btn btn-primary">+ Add Stock</button>
+                                </div>
+                            </form>
+                            <div id="stockStatus" style="margin-top: 10px;"></div>
+                        </div>
+
                         <table id="productsTable">
                             <thead><tr><th>SKU</th><th>Name</th><th>Category</th><th>Pack Size</th><th>Unit Price</th><th>Reorder Level</th><th>Actions</th></tr></thead>
                             <tbody></tbody>
@@ -1147,6 +1173,41 @@
             updateDashboard();
             populateSelects();
             updateTables();
+            if (currentUser.is_admin) loadStockForm();
+        }
+
+        async function loadStockForm() {
+            const branches = await api('/branches');
+            const products = await api('/products/?skip=0&limit=1000');
+            if (branches) {
+                document.getElementById('stockBranch').innerHTML = branches.map(b =>
+                    `<option value="${b.id}">${b.name}</option>`).join('');
+            }
+            if (products) {
+                document.getElementById('stockProduct').innerHTML = products.map(p =>
+                    `<option value="${p.id}">${p.name} (${p.sku})</option>`).join('');
+            }
+        }
+
+        async function addStock(e) {
+            e.preventDefault();
+            const status = document.getElementById('stockStatus');
+            const params = new URLSearchParams({
+                branch_id: document.getElementById('stockBranch').value,
+                product_id: document.getElementById('stockProduct').value,
+                quantity: document.getElementById('stockQty').value,
+                reason: document.getElementById('stockReason').value || 'Admin adjustment'
+            });
+            const result = await api(`/inventory/add-stock/direct?${params}`, { method: 'POST' });
+            if (result) {
+                status.textContent = `✅ Stock updated: ${result.quantity_on_hand} units on hand`;
+                status.style.color = '#155724';
+                e.target.reset();
+                loadData();
+            } else {
+                status.textContent = '❌ Stock was not added. Check the connection and try again.';
+                status.style.color = '#721c24';
+            }
         }
 
         function updateDashboard() {

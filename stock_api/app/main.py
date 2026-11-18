@@ -129,6 +129,8 @@ async def root():
 if dist_dir.exists():
     app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
 
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}

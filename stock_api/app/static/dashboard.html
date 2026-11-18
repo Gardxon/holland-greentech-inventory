@@ -1198,7 +1198,7 @@
                 quantity: document.getElementById('stockQty').value,
                 reason: document.getElementById('stockReason').value || 'Admin adjustment'
             });
-            const result = await api(`/inventory/add-stock/direct?${params}`, { method: 'POST' });
+            const result = await api(`/inventory/add-stock?${params}`, { method: 'POST' });
             if (result) {
                 status.textContent = `✅ Stock updated: ${result.quantity_on_hand} units on hand`;
                 status.style.color = '#155724';

@@ -85,7 +85,7 @@ def create_inventory_level(branch_id: int, product_id: int,
     db.refresh(inventory)
     return inventory
 
-@router.post("/add-stock/direct")
+@router.post("/add-stock")
 def add_stock_direct(branch_id: int = Query(...), product_id: int = Query(...),
                      quantity: int = Query(...), reason: str = Query("Admin adjustment"),
                      db: Session = Depends(get_db)):
